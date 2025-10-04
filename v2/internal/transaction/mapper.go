@@ -16,6 +16,7 @@ var (
 	ErrUnsupportedTransactionReceived = errors.New("unsupported transaction received")
 )
 
+// DataMapperFactory creates DataMapper instances with shared cache
 type DataMapperFactory struct {
 	cache *gocache.Cache
 }
@@ -26,10 +27,12 @@ func NewDataMapperFactory(cache *gocache.Cache) *DataMapperFactory {
 	}
 }
 
+// Make creates a new DataMapper for the given transaction details and model
 func (f *DataMapperFactory) Make(details traderepublic.TimelineDetailsJson, model *Model) *DataMapper {
 	return NewDataMapper(details, model, f.cache)
 }
 
+// DataMapper maps Trade Republic transaction details to internal transaction model
 type DataMapper struct {
 	details  traderepublic.TimelineDetailsJson
 	model    *Model
@@ -46,15 +49,19 @@ func NewDataMapper(details traderepublic.TimelineDetailsJson, model *Model, cach
 	}
 }
 
+// Map transforms Trade Republic transaction data into our internal model
 func (m *DataMapper) Map() error {
+	// Validate transaction has a recognized type
 	if m.model.Type == TypeUnknown {
 		return fmt.Errorf("%w: %s", ErrTransactionWithoutTypeReceived, m.details.Id)
 	}
 
+	// Only process portfolio-related transactions
 	if !slices.Contains(PortfolioTypes, m.model.Type) {
 		return fmt.Errorf("%w: %s", ErrUnsupportedTransactionReceived, m.details.Id)
 	}
 
+	// Extract required sections from transaction details
 	header, err := m.details.SectionHeader()
 	if err != nil {
 		return fmt.Errorf("failed to find header section: %w", err)
@@ -69,6 +76,7 @@ func (m *DataMapper) Map() error {
 
 	m.overview = overview
 
+	// Map basic transaction fields
 	m.MapID()
 	m.MapStatus()
 
@@ -120,14 +128,17 @@ func (m *DataMapper) Map() error {
 	return nil
 }
 
+// MapID extracts transaction ID from details
 func (m *DataMapper) MapID() {
 	m.model.ID = string(m.details.Id)
 }
 
+// MapStatus extracts transaction status from header
 func (m *DataMapper) MapStatus() {
 	m.model.Status = string(m.header.Data.Status)
 }
 
+// mapTimestamp parses and sets transaction timestamp
 func (m *DataMapper) mapTimestamp() error {
 	timestampStr := m.header.Data.Timestamp
 
@@ -141,8 +152,11 @@ func (m *DataMapper) mapTimestamp() error {
 	return nil
 }
 
+// mapISIN extracts ISIN from either action payload or icon data
 func (m *DataMapper) mapISIN() error {
+	// Try to get ISIN from action payload first
 	if m.header.Action == nil {
+		// Fallback: extract ISIN from icon data
 		isin, err := ExtractInstrumentISINFromIcon(m.header.Data.Icon)
 		if err != nil {
 			return fmt.Errorf("failed to extract ISIN from icon: %w", err)
@@ -158,6 +172,7 @@ func (m *DataMapper) mapISIN() error {
 	return nil
 }
 
+// mapAsset fetches and sets asset name and type using ISIN
 func (m *DataMapper) mapAsset() error {
 	if m.model.ISIN == "" {
 		return nil
@@ -178,11 +193,14 @@ func (m *DataMapper) mapAsset() error {
 	return nil
 }
 
+// mapShares extracts share quantity, handling different transaction formats
 func (m *DataMapper) mapShares() error {
 	var str string
 
+	// Handle different transaction formats based on type
 	switch m.model.Type {
 	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome:
+		// Pre-2025 format: shares in transaction section
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction section: %w", err)
@@ -195,6 +213,7 @@ func (m *DataMapper) mapShares() error {
 
 		str = shares.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		// Current format: shares in overview section
 		trn, err := m.overview.FindData(traderepublic.DataTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction data: %w", err)
@@ -210,6 +229,7 @@ func (m *DataMapper) mapShares() error {
 
 	m.model.Shares = shares
 
+	// Make shares negative for sell transactions
 	if slices.Contains(GainTypes, m.model.Type) {
 		m.model.Shares = -shares
 	}
@@ -217,11 +237,13 @@ func (m *DataMapper) mapShares() error {
 	return nil
 }
 
+// mapSharePrice extracts price per share, handling different transaction formats
 func (m *DataMapper) mapSharePrice() error {
 	var str string
 
 	switch m.model.Type {
 	case TypeDividendsIncome:
+		// For dividends, use dividend per share
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction section: %w", err)
@@ -234,6 +256,7 @@ func (m *DataMapper) mapSharePrice() error {
 
 		str = dividendsPerShare.Detail.Text
 	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502:
+		// Pre-2025 format: share price in transaction section
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction section: %w", err)
@@ -246,6 +269,7 @@ func (m *DataMapper) mapSharePrice() error {
 
 		str = sharePrice.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		// Current format: share price in overview section
 		trn, err := m.overview.FindData(traderepublic.DataTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction data: %w", err)
@@ -264,13 +288,16 @@ func (m *DataMapper) mapSharePrice() error {
 	return nil
 }
 
+// mapFee extracts transaction fees (dividends are fee-free)
 func (m *DataMapper) mapFee() error {
 	var str string
 
 	switch m.model.Type {
 	case TypeDividendsIncome:
+		// Dividends don't have fees
 		return nil
 	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502:
+		// Pre-2025 format: fee in transaction section
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction section: %w", err)
@@ -283,6 +310,7 @@ func (m *DataMapper) mapFee() error {
 
 		str = fee.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		// Current format: fee in overview section
 		fee, err := m.overview.FindData(traderepublic.DataFee)
 		if err != nil {
 			return fmt.Errorf("failed to find fee data: %w", err)
@@ -291,6 +319,7 @@ func (m *DataMapper) mapFee() error {
 		str = fee.Detail.Text
 	}
 
+	// Handle free transactions
 	if str != "Free" {
 		fee, err := ParseFloatFromResponse(str)
 		if err != nil {
@@ -303,11 +332,13 @@ func (m *DataMapper) mapFee() error {
 	return nil
 }
 
+// mapTotal extracts total transaction amount and sets debit/credit accordingly
 func (m *DataMapper) mapTotal() error {
 	var str string
 
 	switch m.model.Type {
 	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome:
+		// Pre-2025 format: total in transaction section
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
 			return fmt.Errorf("failed to find transaction section: %w", err)
@@ -320,6 +351,7 @@ func (m *DataMapper) mapTotal() error {
 
 		str = total.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		// Current format: total in overview section
 		total, err := m.overview.FindData(traderepublic.DataTotal)
 		if err != nil {
 			return fmt.Errorf("failed to find total data: %w", err)
@@ -333,8 +365,10 @@ func (m *DataMapper) mapTotal() error {
 		return fmt.Errorf("failed to parse float from total: %w", err)
 	}
 
+	// Default to debit (money going out)
 	m.model.Debit = total
 
+	// For credit transactions (money coming in), set credit field
 	if slices.Contains(CreditTypes, m.model.Type) {
 		m.model.Credit = total
 	}
@@ -342,12 +376,10 @@ func (m *DataMapper) mapTotal() error {
 	return nil
 }
 
+// mapProfit extracts realized profit for sell transactions
 func (m *DataMapper) mapProfit() error {
-	if m.model.Type == TypeDividendsIncome {
-		return nil
-	}
-
-	if !slices.Contains(GainTypes, m.model.Type) {
+	// Skip non-gain transactions and dividends
+	if m.model.Type == TypeDividendsIncome || !slices.Contains(GainTypes, m.model.Type) {
 		return nil
 	}
 
@@ -373,13 +405,16 @@ func (m *DataMapper) mapProfit() error {
 	return nil
 }
 
+// mapGain extracts gain/loss percentage for sell transactions or dividend amount
 func (m *DataMapper) mapGain() error {
 	if m.model.Type == TypeDividendsIncome {
+		// For dividends, gain equals credit amount
 		m.model.Gain = m.model.Credit
 
 		return nil
 	}
 
+	// Skip non-gain transactions
 	if !slices.Contains(GainTypes, m.model.Type) {
 		return nil
 	}
