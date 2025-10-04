@@ -572,6 +572,9 @@
             "text": {
               "type": "string"
             },
+            "trend": {
+              "type": "string"
+            },
             "displayValue": {
               "type": "object",
               "required": [

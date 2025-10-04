@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/internal/transaction"
@@ -47,7 +48,6 @@ func TestDataMapper_Map(t *testing.T) {
 	}
 
 	resolver := transaction.NewTypeResolver()
-	mapper := transaction.NewDataMapper(cache)
 
 	for _, entry := range entries {
 		contents, err := os.ReadFile(filepath.Join(detailsPath, entry.Name()))
@@ -72,8 +72,10 @@ func TestDataMapper_Map(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = mapper.Map(details, &model)
-			if errors.Is(err, transaction.ErrTransactionWithoutTypeReceived) {
+			mapper := transaction.NewDataMapper(details, &model, cache)
+
+			err = mapper.Map()
+			if errors.Is(err, transaction.ErrUnsupportedTransactionReceived) {
 				t.Skip()
 			}
 
@@ -88,7 +90,18 @@ func TestDataMapper_Map(t *testing.T) {
 			assert.NotEmpty(t, model.Shares)
 			assert.NotEmpty(t, model.SharePrice)
 			assert.NotNil(t, model.Fee)
-			assert.NotEmpty(t, model.Debit)
+
+			if model.Debit == 0 {
+				assert.NotEmpty(t, model.Credit)
+			}
+
+			if model.Credit == 0 {
+				assert.NotEmpty(t, model.Debit)
+			}
+
+			if slices.Contains(transaction.GainTypes, model.Type) {
+				assert.NotEmpty(t, model.Gain)
+			}
 		})
 	}
 }

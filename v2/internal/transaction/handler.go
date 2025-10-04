@@ -9,16 +9,16 @@ import (
 )
 
 type Handler struct {
-	resolver *TypeResolver
-	mapper   *DataMapper
-	eventBus *bus.EventBus
+	resolver      *TypeResolver
+	mapperFactory *DataMapperFactory
+	eventBus      *bus.EventBus
 }
 
-func NewHandler(resolver *TypeResolver, mapper *DataMapper, eventBus *bus.EventBus) *Handler {
+func NewHandler(resolver *TypeResolver, mapperFactory *DataMapperFactory, eventBus *bus.EventBus) *Handler {
 	return &Handler{
-		resolver: resolver,
-		mapper:   mapper,
-		eventBus: eventBus,
+		resolver:      resolver,
+		mapperFactory: mapperFactory,
+		eventBus:      eventBus,
 	}
 }
 
@@ -54,7 +54,9 @@ func (h *Handler) Handle(event bus.Event) {
 		return
 	}
 
-	err = h.mapper.Map(details, &model)
+	mapper := h.mapperFactory.Make(details, &model)
+
+	err = mapper.Map()
 	if err != nil {
 		slog.Error("failed to map", "id", event.ID, "err", err)
 	}

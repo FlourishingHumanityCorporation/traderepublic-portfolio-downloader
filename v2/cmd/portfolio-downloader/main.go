@@ -72,9 +72,9 @@ func main() {
 	tdHandler := timelinedetails.NewHandler(eventBus)
 	instrHandler := instrument.NewHandler(msgClient, cache)
 
-	mapper := transaction.NewDataMapper(cache)
+	mapperFactory := transaction.NewDataMapperFactory(cache)
 	resolver := transaction.NewTypeResolver()
-	trnHandler := transaction.NewHandler(resolver, mapper, eventBus)
+	trnHandler := transaction.NewHandler(resolver, mapperFactory, eventBus)
 	csvWriter := file.NewCSVWriter()
 	csvHandler := file.NewCSVHandler(internal.CSVFilename, csvWriter)
 

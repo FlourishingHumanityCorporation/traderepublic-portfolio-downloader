@@ -7,205 +7,71 @@ import (
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/pkg/traderepublic"
 )
 
+const (
+	TypeUnknown              Type = "unknown"                   // Unknown transaction type
+	TypeIgnored              Type = "ingored"                   // Ignored transaction type
+	TypeSavingsPlan          Type = "Savings plan"              // Savings plan transaction
+	TypeSavingsPlanPre202502 Type = "Savings plan pre Feb 2025" // Savings plan transaction
+	TypeCardPayment          Type = "Card payment"              // Card payment transaction
+	TypeCardRefund           Type = "Card refund"               // Card refund transaction
+	TypeBuyOrder             Type = "Buy order"                 // Buy order transaction
+	TypeBuyOrderPre202502    Type = "Buy order pre Feb 2025"    // Buy order transaction
+	TypeSellOrder            Type = "Sell order"                // Sell order transaction
+	TypeSellOrderPre202502   Type = "Sell order pre Feb 2025"   // Sell order transaction
+	TypeLimitSell            Type = "Limit sell"
+	TypeLimitSellPre202502   Type = "Limit sell pre Feb 2025"
+	TypeDividendsIncome      Type = "Dividends income" // Dividends income transaction
+	TypeRoundUp              Type = "Round up"         // Round up transaction
+	TypeSaveback             Type = "Saveback"         // Saveback transaction
+	TypeDeposit              Type = "Deposit"          // Deposit transaction
+	TypeWithdrawal           Type = "Withdrawal"       // Withdrawal transaction
+	TypeInterestPayment      Type = "Interest payment" // Interest payment transaction
+)
+
 var (
 	ErrCancelledTransactionReceived = errors.New("canceled transaction type received")
 	ErrIgnoredTransactionReceived   = errors.New("ignored transaction type received")
 	ErrUnknownTransactionReceived   = errors.New("unknown transaction type received")
+
+	PortfolioTypes = []Type{
+		TypeSavingsPlan,
+		TypeSavingsPlanPre202502,
+		TypeBuyOrder,
+		TypeBuyOrderPre202502,
+		TypeSellOrder,
+		TypeSellOrderPre202502,
+		TypeLimitSell,
+		TypeLimitSellPre202502,
+		TypeDividendsIncome,
+		TypeRoundUp,
+		TypeSaveback,
+		TypeDeposit,
+		TypeWithdrawal,
+		TypeInterestPayment,
+	}
+
+	GainTypes = []Type{
+		TypeSellOrder,
+		TypeSellOrderPre202502,
+		TypeLimitSell,
+		TypeLimitSellPre202502,
+		TypeDividendsIncome,
+		TypeInterestPayment,
+	}
+
+	CreditTypes = []Type{
+		TypeSellOrder,
+		TypeSellOrderPre202502,
+		TypeLimitSell,
+		TypeLimitSellPre202502,
+		TypeDividendsIncome,
+		TypeInterestPayment,
+		TypeDeposit,
+	}
 )
 
-type Type interface {
-	fmt.Stringer
-	FindID(details traderepublic.TimelineDetailsJson) string
-	FindStatus(details traderepublic.TimelineDetailsJson) (string, error)
-	FindTimestamp(details traderepublic.TimelineDetailsJson) (string, error)
-	FindISIN(details traderepublic.TimelineDetailsJson) (string, error)
-	FindShares(details traderepublic.TimelineDetailsJson) (string, error)
-	FindSharePrice(details traderepublic.TimelineDetailsJson) (string, error)
-	FindFee(details traderepublic.TimelineDetailsJson) (string, error)
-	FindTotal(details traderepublic.TimelineDetailsJson) (string, error)
-}
-
-type GenericType struct {
-}
-
-func (t *GenericType) FindID(details traderepublic.TimelineDetailsJson) string {
-	return string(details.Id)
-}
-
-func (t *GenericType) FindStatus(details traderepublic.TimelineDetailsJson) (string, error) {
-	header, err := details.SectionHeader()
-	if err != nil {
-		return "", fmt.Errorf("failed to find header section: %w", err)
-	}
-
-	return string(header.Data.Status), nil
-}
-
-func (t *GenericType) FindTimestamp(details traderepublic.TimelineDetailsJson) (string, error) {
-	header, err := details.SectionHeader()
-	if err != nil {
-		return "", fmt.Errorf("failed to find header section: %w", err)
-	}
-
-	return header.Data.Timestamp, nil
-}
-
-type HeaderActionPayloadISINType struct {
-	GenericType
-}
-
-func (t *HeaderActionPayloadISINType) FindISIN(details traderepublic.TimelineDetailsJson) (string, error) {
-	header, err := details.SectionHeader()
-	if err != nil {
-		return "", fmt.Errorf("failed to find header section: %w", err)
-	}
-
-	return header.Action.Payload, nil
-}
-
-type SavingsPlanType struct {
-	HeaderActionPayloadISINType
-}
-
-func (t *SavingsPlanType) FindShares(details traderepublic.TimelineDetailsJson) (string, error) {
-	overview, err := details.FindSection(traderepublic.SectionOverview)
-	if err != nil {
-		return "", fmt.Errorf("failed to find overview section: %w", err)
-	}
-
-	trn, err := overview.FindData(traderepublic.DataTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction data: %w", err)
-	}
-
-	return *trn.Detail.DisplayValue.Prefix, nil
-}
-
-func (t *SavingsPlanType) FindSharePrice(details traderepublic.TimelineDetailsJson) (string, error) {
-	overview, err := details.FindSection(traderepublic.SectionOverview)
-	if err != nil {
-		return "", fmt.Errorf("failed to find overview section: %w", err)
-	}
-
-	trn, err := overview.FindData(traderepublic.DataTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction data: %w", err)
-	}
-
-	return trn.Detail.DisplayValue.Text, nil
-}
-
-func (t *SavingsPlanType) FindFee(details traderepublic.TimelineDetailsJson) (string, error) {
-	overview, err := details.FindSection(traderepublic.SectionOverview)
-	if err != nil {
-		return "", fmt.Errorf("failed to find overview section: %w", err)
-	}
-
-	fee, err := overview.FindData(traderepublic.DataFee)
-	if err != nil {
-		return "", fmt.Errorf("failed to find fee data: %w", err)
-	}
-
-	return fee.Detail.Text, nil
-}
-
-func (t *SavingsPlanType) FindTotal(details traderepublic.TimelineDetailsJson) (string, error) {
-	overview, err := details.FindSection(traderepublic.SectionOverview)
-	if err != nil {
-		return "", fmt.Errorf("failed to find overview section: %w", err)
-	}
-
-	total, err := overview.FindData(traderepublic.DataTotal)
-	if err != nil {
-		return "", fmt.Errorf("failed to find total data: %w", err)
-	}
-
-	return total.Detail.Text, nil
-}
-
-func (t *SavingsPlanType) String() string {
-	return "Savings plan"
-}
-
-type SavingsPlanPre202502Type struct {
-	SavingsPlanType
-}
-
-func (t *SavingsPlanPre202502Type) FindShares(details traderepublic.TimelineDetailsJson) (string, error) {
-	trnSection, err := details.FindSection(traderepublic.SectionTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction section: %w", err)
-	}
-
-	shares, err := trnSection.FindData(traderepublic.DataShares)
-	if err != nil {
-		return "", fmt.Errorf("failed to find shares data: %w", err)
-	}
-
-	return shares.Detail.Text, nil
-}
-
-func (t *SavingsPlanPre202502Type) FindSharePrice(details traderepublic.TimelineDetailsJson) (string, error) {
-	trnSection, err := details.FindSection(traderepublic.SectionTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction section: %w", err)
-	}
-
-	sharePrice, err := trnSection.FindData(traderepublic.DataSharePrice)
-	if err != nil {
-		return "", fmt.Errorf("failed to find shares data: %w", err)
-	}
-
-	return sharePrice.Detail.Text, nil
-}
-
-func (t *SavingsPlanPre202502Type) FindFee(details traderepublic.TimelineDetailsJson) (string, error) {
-	trnSection, err := details.FindSection(traderepublic.SectionTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction section: %w", err)
-	}
-
-	fee, err := trnSection.FindData(traderepublic.DataFee)
-	if err != nil {
-		return "", fmt.Errorf("failed to find fee data: %w", err)
-	}
-
-	return fee.Detail.Text, nil
-}
-
-func (t *SavingsPlanPre202502Type) FindTotal(details traderepublic.TimelineDetailsJson) (string, error) {
-	trnSection, err := details.FindSection(traderepublic.SectionTransaction)
-	if err != nil {
-		return "", fmt.Errorf("failed to find transaction section: %w", err)
-	}
-
-	total, err := trnSection.FindData(traderepublic.DataTotal)
-	if err != nil {
-		return "", fmt.Errorf("failed to find total data: %w", err)
-	}
-
-	return total.Detail.Text, nil
-}
-
-// TransactionType represents the type of a transaction.
-type TransactionType string
-
-const (
-	TypeUnknown              TransactionType = "unknown"          // Unknown transaction type
-	TypeIgnored              TransactionType = "ingored"          // Ignored transaction type
-	TypeSavingsplan          TransactionType = "Savings plan"     // Savings plan transaction
-	TypeSavingsplanPre202502 TransactionType = "Savings plan"     // Savings plan transaction
-	TypeCardPayment          TransactionType = "Card payment"     // Card payment transaction
-	TypeCardRefund           TransactionType = "Card refund"      // Card refund transaction
-	TypeBuyOrder             TransactionType = "Buy order"        // Buy order transaction
-	TypeSellOrder            TransactionType = "Sell order"       // Sell order transaction
-	TypeDividendsIncome      TransactionType = "Dividends income" // Dividends income transaction
-	TypeRoundUp              TransactionType = "Round up"         // Round up transaction
-	TypeSaveback             TransactionType = "Saveback"         // Saveback transaction
-	TypeDeposit              TransactionType = "Deposit"          // Deposit transaction
-	TypeWithdrawal           TransactionType = "Withdrawal"       // Withdrawal transaction
-	TypeInterestPayment      TransactionType = "Interest payment" // Interest payment transaction
-)
+// Type represents the type of a transaction.
+type Type string
 
 // TypeResolver resolves the type of a transaction based on its details.
 type TypeResolver struct {
@@ -236,21 +102,21 @@ func (r *TypeResolver) SetType(details traderepublic.TimelineDetailsJson, model 
 		return fmt.Errorf("%w: %s", ErrIgnoredTransactionReceived, details.Id)
 	}
 
-	// // Check for card payment transactions
-	// _, err = overview.FindData(traderepublic.DataCardPayment)
-	// if err == nil {
-	// 	model.Type = TypeCardPayment
+	// Check for card payment transactions
+	_, err = overview.FindData(traderepublic.DataCardPayment)
+	if err == nil {
+		model.Type = TypeCardPayment
 
-	// 	return
-	// }
+		return nil
+	}
 
-	// // Check for card refund transactions
-	// _, err = overview.FindData(traderepublic.DataCardRefund)
-	// if err == nil {
-	// 	model.Type = TypeCardRefund
+	// Check for card refund transactions
+	_, err = overview.FindData(traderepublic.DataCardRefund)
+	if err == nil {
+		model.Type = TypeCardRefund
 
-	// 	return
-	// }
+		return nil
+	}
 
 	// // Check for deposit transactions
 	// _, err = details.FindSection(traderepublic.SectionSender)
@@ -286,48 +152,43 @@ func (r *TypeResolver) SetType(details traderepublic.TimelineDetailsJson, model 
 	// Check for savings plan transactions
 	_, err = overview.FindData(traderepublic.DataSavingsPlan)
 	if err == nil {
-		model.Type = &SavingsPlanType{}
+		model.Type = TypeSavingsPlan
 
 		return nil
 	}
 
-	// // Check for dividends income transactions
-	// event, err := overview.FindData(traderepublic.DataEvent)
-	// if err == nil {
-	// 	switch event.Detail.Text {
-	// 	case "Income", "Cash dividend":
-	// 		model.Type = TypeDividendsIncome
+	event, err := overview.FindData(traderepublic.DataEvent)
+	if err == nil {
+		switch event.Detail.Text {
+		case "Income", "Cash dividend":
+			model.Type = TypeDividendsIncome
 
-	// 		return
-	// 	case "Tax Settlement":
-	// 		model.Type = TypeIgnored
-
-	// 		slog.Warn("ignored transaction type", "id", details.Id, "err", err, "info", "Tax Settlement")
-
-	// 		return
-	// 	}
-	// }
+			return nil
+		case "Tax Settlement":
+			return fmt.Errorf("%w: %s", ErrIgnoredTransactionReceived, details.Id)
+		}
+	}
 
 	// Check for buy order transactions
 	orderType, err := overview.FindData(traderepublic.DataOrderType)
 	if err == nil {
 		switch orderType.Detail.Text {
 		case "Savings plan":
-			model.Type = &SavingsPlanPre202502Type{}
+			model.Type = TypeSavingsPlanPre202502
 
 			return nil
-			// 	case "Buy":
-			// 		model.Type = TypeBuyOrder
+		case "Buy":
+			model.Type = TypeBuyOrderPre202502
 
-			// 		return
-			// 	case "Sell":
-			// 		model.Type = TypeSellOrder
+			return nil
+		case "Sell":
+			model.Type = TypeSellOrderPre202502
 
-			// 		return
-			// 	case "Limit Sell":
-			// 		model.Type = TypeSellOrder
+			return nil
+		case "Limit Sell":
+			model.Type = TypeLimitSellPre202502
 
-			// 		return
+			return nil
 		}
 	}
 
@@ -364,29 +225,29 @@ func (r *TypeResolver) SetType(details traderepublic.TimelineDetailsJson, model 
 	// 	return
 	// }
 
-	// // Check for limit sell transactions
-	// _, err = overview.FindData(traderepublic.DataLimitSell)
-	// if err == nil {
-	// 	model.Type = TypeSellOrder
+	// Check for limit sell transactions
+	_, err = overview.FindData(traderepublic.DataLimitSell)
+	if err == nil {
+		model.Type = TypeLimitSell
 
-	// 	return
-	// }
+		return nil
+	}
 
-	// // Check for sell transactions
-	// _, err = overview.FindData(traderepublic.DataSell)
-	// if err == nil {
-	// 	model.Type = TypeSellOrder
+	// Check for sell transactions
+	_, err = overview.FindData(traderepublic.DataSell)
+	if err == nil {
+		model.Type = TypeSellOrder
 
-	// 	return
-	// }
+		return nil
+	}
 
-	// // Check for buy transactions
-	// _, err = overview.FindData(traderepublic.DataBuy)
-	// if err == nil {
-	// 	model.Type = TypeBuyOrder
+	// Check for buy transactions
+	_, err = overview.FindData(traderepublic.DataBuy)
+	if err == nil {
+		model.Type = TypeBuyOrder
 
-	// 	return
-	// }
+		return nil
+	}
 
 	return fmt.Errorf("%w: %s", ErrUnknownTransactionReceived, details.Id)
 }

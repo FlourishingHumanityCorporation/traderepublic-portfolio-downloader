@@ -53,7 +53,7 @@ func ExtractInstrumentISINFromIcon(src string) (string, error) {
 	matches := pattern.FindStringSubmatch(src)
 
 	if len(matches) == 0 {
-		return "", ErrPatternMismatch
+		return "", fmt.Errorf("%w: '%s'", ErrPatternMismatch, src)
 	}
 
 	return matches[1], nil
@@ -64,7 +64,7 @@ func ParseFloatFromResponse(src string) (float64, error) {
 	matches := pattern.FindStringSubmatch(src)
 
 	if len(matches) == 0 {
-		return 0, ErrPatternMismatch
+		return 0, fmt.Errorf("%w: '%s'", ErrPatternMismatch, src)
 	}
 
 	wholePart := matches[1]

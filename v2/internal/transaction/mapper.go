@@ -4,205 +4,410 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/pkg/traderepublic"
 	gocache "github.com/patrickmn/go-cache"
 )
 
-var ErrTransactionWithoutTypeReceived = errors.New("transaction without type received")
+var (
+	ErrTransactionWithoutTypeReceived = errors.New("transaction without type received")
+	ErrUnsupportedTransactionReceived = errors.New("unsupported transaction received")
+)
 
-type DataMapper struct {
+type DataMapperFactory struct {
 	cache *gocache.Cache
 }
 
-func NewDataMapper(cache *gocache.Cache) *DataMapper {
-	return &DataMapper{
+func NewDataMapperFactory(cache *gocache.Cache) *DataMapperFactory {
+	return &DataMapperFactory{
 		cache: cache,
 	}
 }
 
-func (m *DataMapper) Map(details traderepublic.TimelineDetailsJson, model *Model) error {
-	if model.Type == nil {
-		return fmt.Errorf("%w: %s", ErrTransactionWithoutTypeReceived, details.Id)
+func (f *DataMapperFactory) Make(details traderepublic.TimelineDetailsJson, model *Model) *DataMapper {
+	return NewDataMapper(details, model, f.cache)
+}
+
+type DataMapper struct {
+	details  traderepublic.TimelineDetailsJson
+	model    *Model
+	cache    *gocache.Cache
+	header   traderepublic.HeaderSection
+	overview traderepublic.TableSection
+}
+
+func NewDataMapper(details traderepublic.TimelineDetailsJson, model *Model, cache *gocache.Cache) *DataMapper {
+	return &DataMapper{
+		details: details,
+		model:   model,
+		cache:   cache,
+	}
+}
+
+func (m *DataMapper) Map() error {
+	if m.model.Type == TypeUnknown {
+		return fmt.Errorf("%w: %s", ErrTransactionWithoutTypeReceived, m.details.Id)
 	}
 
-	model.ID = model.Type.FindID(details)
-	status, err := model.Type.FindStatus(details)
+	if !slices.Contains(PortfolioTypes, m.model.Type) {
+		return fmt.Errorf("%w: %s", ErrUnsupportedTransactionReceived, m.details.Id)
+	}
+
+	header, err := m.details.SectionHeader()
 	if err != nil {
-		return fmt.Errorf("failed to find status in details: %w", err)
+		return fmt.Errorf("failed to find header section: %w", err)
 	}
 
-	model.Status = status
+	m.header = header
 
-	timestampStr, err := model.Type.FindTimestamp(details)
+	overview, err := m.details.FindSection(traderepublic.SectionOverview)
 	if err != nil {
-		return fmt.Errorf("failed to find timestamp in details: %w", err)
+		return fmt.Errorf("failed to find overview section: %w", err)
 	}
+
+	m.overview = overview
+
+	m.MapID()
+	m.MapStatus()
+
+	err = m.mapISIN()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapTimestamp()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapShares()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapSharePrice()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapFee()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapTotal()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapAsset()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapProfit()
+	if err != nil {
+		return err
+	}
+
+	err = m.mapGain()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DataMapper) MapID() {
+	m.model.ID = string(m.details.Id)
+}
+
+func (m *DataMapper) MapStatus() {
+	m.model.Status = string(m.header.Data.Status)
+}
+
+func (m *DataMapper) mapTimestamp() error {
+	timestampStr := m.header.Data.Timestamp
 
 	timestamp, err := ParseTimestamp(timestampStr)
 	if err != nil {
 		return fmt.Errorf("failed to parse timestamp: %w", err)
 	}
 
-	model.Timestamp = CSVDateTime{Time: timestamp}
+	m.model.Timestamp = CSVDateTime{Time: timestamp}
 
-	isin, err := model.Type.FindISIN(details)
-	if err != nil {
-		return fmt.Errorf("failed to find ISIN in details: %w", err)
+	return nil
+}
+
+func (m *DataMapper) mapISIN() error {
+	if m.header.Action == nil {
+		isin, err := ExtractInstrumentISINFromIcon(m.header.Data.Icon)
+		if err != nil {
+			return fmt.Errorf("failed to extract ISIN from icon: %w", err)
+		}
+
+		m.model.ISIN = isin
+
+		return nil
 	}
 
-	model.ISIN = isin
+	m.model.ISIN = m.header.Action.Payload
 
-	sharesStr, err := model.Type.FindShares(details)
-	if err != nil {
-		return fmt.Errorf("failed to find shares in details: %w", err)
+	return nil
+}
+
+func (m *DataMapper) mapAsset() error {
+	if m.model.ISIN == "" {
+		return nil
 	}
 
-	shares, err := ParseFloatFromResponse(sharesStr)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+	defer cancel()
+
+	instr, err := m.getInstrument(ctx, m.model.ISIN)
+	if err != nil {
+		return fmt.Errorf("failed to get instrument: %w", err)
+	}
+
+	m.model.AssetName = *instr.ShortName
+	m.model.AssetType = string(instr.TypeId)
+
+	return nil
+}
+
+func (m *DataMapper) mapShares() error {
+	var str string
+
+	switch m.model.Type {
+	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome:
+		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction section: %w", err)
+		}
+
+		shares, err := trnSection.FindData(traderepublic.DataShares)
+		if err != nil {
+			return fmt.Errorf("failed to find shares data: %w", err)
+		}
+
+		str = shares.Detail.Text
+	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		trn, err := m.overview.FindData(traderepublic.DataTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction data: %w", err)
+		}
+
+		str = *trn.Detail.DisplayValue.Prefix
+	}
+
+	shares, err := ParseFloatFromResponse(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from shares: %w", err)
 	}
 
-	model.Shares = shares
+	m.model.Shares = shares
 
-	shaePriceStr, err := model.Type.FindSharePrice(details)
-	if err != nil {
-		return fmt.Errorf("failed to find share price in details: %w", err)
+	if slices.Contains(GainTypes, m.model.Type) {
+		m.model.Shares = -shares
 	}
 
-	sharePrice, err := ParseFloatFromResponse(shaePriceStr)
+	return nil
+}
+
+func (m *DataMapper) mapSharePrice() error {
+	var str string
+
+	switch m.model.Type {
+	case TypeDividendsIncome:
+		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction section: %w", err)
+		}
+
+		dividendsPerShare, err := trnSection.FindData(traderepublic.DataDividendPerShare)
+		if err != nil {
+			return fmt.Errorf("failed to find shares data: %w", err)
+		}
+
+		str = dividendsPerShare.Detail.Text
+	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502:
+		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction section: %w", err)
+		}
+
+		sharePrice, err := trnSection.FindData(traderepublic.DataSharePrice)
+		if err != nil {
+			return fmt.Errorf("failed to find shares data: %w", err)
+		}
+
+		str = sharePrice.Detail.Text
+	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		trn, err := m.overview.FindData(traderepublic.DataTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction data: %w", err)
+		}
+
+		str = trn.Detail.DisplayValue.Text
+	}
+
+	sharePrice, err := ParseFloatFromResponse(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from share price: %w", err)
 	}
 
-	model.SharePrice = sharePrice
+	m.model.SharePrice = sharePrice
 
-	feeStr, err := model.Type.FindFee(details)
-	if err != nil {
-		return fmt.Errorf("failed to find fee data: %w", err)
+	return nil
+}
+
+func (m *DataMapper) mapFee() error {
+	var str string
+
+	switch m.model.Type {
+	case TypeDividendsIncome:
+		return nil
+	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502:
+		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction section: %w", err)
+		}
+
+		fee, err := trnSection.FindData(traderepublic.DataFee)
+		if err != nil {
+			return fmt.Errorf("failed to find fee data: %w", err)
+		}
+
+		str = fee.Detail.Text
+	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		fee, err := m.overview.FindData(traderepublic.DataFee)
+		if err != nil {
+			return fmt.Errorf("failed to find fee data: %w", err)
+		}
+
+		str = fee.Detail.Text
 	}
 
-	zeroFee := float64(0)
-	model.Fee = &zeroFee
-
-	if feeStr != "Free" {
-		fee, err := ParseFloatFromResponse(feeStr)
+	if str != "Free" {
+		fee, err := ParseFloatFromResponse(str)
 		if err != nil {
 			return fmt.Errorf("failed to parse float from fee: %w", err)
 		}
 
-		model.Fee = &fee
+		m.model.Fee = fee
 	}
 
-	totalStr, err := model.Type.FindTotal(details)
-	if err != nil {
-		return fmt.Errorf("failed to find total data: %w", err)
+	return nil
+}
+
+func (m *DataMapper) mapTotal() error {
+	var str string
+
+	switch m.model.Type {
+	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome:
+		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
+		if err != nil {
+			return fmt.Errorf("failed to find transaction section: %w", err)
+		}
+
+		total, err := trnSection.FindData(traderepublic.DataTotal)
+		if err != nil {
+			return fmt.Errorf("failed to find total data: %w", err)
+		}
+
+		str = total.Detail.Text
+	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
+		total, err := m.overview.FindData(traderepublic.DataTotal)
+		if err != nil {
+			return fmt.Errorf("failed to find total data: %w", err)
+		}
+
+		str = total.Detail.Text
 	}
 
-	total, err := ParseFloatFromResponse(totalStr)
+	total, err := ParseFloatFromResponse(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from total: %w", err)
 	}
 
-	model.Debit = total
+	m.model.Debit = total
 
-	if isin != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-
-		defer cancel()
-
-		instr, err := m.getInstrument(ctx, isin)
-		if err != nil {
-			return fmt.Errorf("failed to get instrument: %w", err)
-		}
-
-		model.AssetName = *instr.ShortName
-		model.AssetType = string(instr.TypeId)
+	if slices.Contains(CreditTypes, m.model.Type) {
+		m.model.Credit = total
 	}
 
 	return nil
+}
 
-	// header, err := details.SectionHeader()
-	// if err != nil {
-	// 	return Model{}, fmt.Errorf("failed to find header section: %w", err)
-	// }
+func (m *DataMapper) mapProfit() error {
+	if m.model.Type == TypeDividendsIncome {
+		return nil
+	}
 
-	// overview, err := details.FindSection(traderepublic.SectionOverview)
-	// if err != nil {
-	// 	return Model{}, fmt.Errorf("failed to find overview section: %w", err)
-	// }
+	if !slices.Contains(GainTypes, m.model.Type) {
+		return nil
+	}
 
-	// model := Model{
-	// 	ID:     string(details.Id),
-	// 	Status: string(header.Data.Status),
-	// }
+	performance, err := m.details.FindSection(traderepublic.SectionPerformance)
+	if err != nil {
+		return fmt.Errorf("failed to find performance section: %w", err)
+	}
 
-	// timestamp, err := ParseTimestamp(header.Data.Timestamp)
-	// if err != nil {
-	// 	return model, fmt.Errorf("failed to parse timestamp: %w", err)
-	// }
+	profitData, err := performance.FindData(traderepublic.DataProfit)
+	if err != nil {
+		return fmt.Errorf("failed to find profit data: %w", err)
+	}
 
-	// model.Timestamp = CSVDateTime{Time: timestamp}
+	str := profitData.Detail.Text
 
-	// switch trnType {
-	// case TypeBuyOrder, TypeSellOrder, TypeRoundUp, TypeSaveback:
-	// 	model.ISIN = header.Action.Payload
+	profit, err := ParseFloatFromResponse(str)
+	if err != nil {
+		return fmt.Errorf("failed to parse float from profit: %w", err)
+	}
 
-	// 	trn, err := details.FindSection(traderepublic.SectionTransaction)
-	// 	if err != nil {
-	// 		return model, fmt.Errorf("failed to find transaction section: %w", err)
-	// 	}
+	m.model.Profit = profit
 
-	// 	shares, err := trn.FindData(traderepublic.DataShares)
-	// 	if err != nil {
-	// 		return model, fmt.Errorf("failed to find shares data: %w", err)
-	// 	}
+	return nil
+}
 
-	// 	model.Shares, err = strconv.ParseFloat(shares.Detail.Text, 64)
-	// 	if err != nil {
-	// 		return model, fmt.Errorf("failed to parse float from shares: %w", err)
-	// 	}
+func (m *DataMapper) mapGain() error {
+	if m.model.Type == TypeDividendsIncome {
+		m.model.Gain = m.model.Credit
 
-	// case TypeSavingsplan:
-	// 	model.ISIN = header.Action.Payload
+		return nil
+	}
 
-	// 	var sharesVal string
+	if !slices.Contains(GainTypes, m.model.Type) {
+		return nil
+	}
 
-	// 	trn, err := overview.FindData(traderepublic.DataTransaction)
-	// 	if err != nil {
-	// 		trnSection, err := details.FindSection(traderepublic.SectionTransaction)
-	// 		if err != nil {
+	performance, err := m.details.FindSection(traderepublic.SectionPerformance)
+	if err != nil {
+		return fmt.Errorf("failed to find performance section: %w", err)
+	}
 
-	// 		}
-	// 		if err == nil {
-	// 			shares, err := trnSection.FindData(traderepublic.DataShares)
-	// 			if err == nil {
-	// 				sharesVal = shares.Detail.Text
+	gainData, err := performance.FindData(traderepublic.DataGain)
+	if err != nil {
+		return fmt.Errorf("failed to find gain data: %w", err)
+	}
 
-	// 				break
-	// 			}
-	// 		}
+	str := gainData.Detail.Text
 
-	// 		return model, fmt.Errorf("failed to find transaction data: %w", err)
-	// 	}
+	gain, err := ParseFloatFromResponse(str)
+	if err != nil {
+		return fmt.Errorf("failed to parse float from gain: %w", err)
+	}
 
-	// 	if trn.Detail.DisplayValue != nil {
-	// 		sharesVal = *trn.Detail.DisplayValue.Prefix
-	// 	}
+	m.model.Gain = gain
 
-	// 	model.Shares, err = ParseFloatFromResponse(sharesVal)
-	// 	if err != nil {
-	// 		return model, fmt.Errorf("failed to parse shares data: %w", err)
-	// 	}
-	// case TypeDividendsIncome:
-	// 	model.ISIN, err = ExtractInstrumentISINFromIcon(header.Data.Icon)
-	// 	if err != nil {
-	// 		return model, fmt.Errorf("failed to extract ISIN from icon: %w", err)
-	// 	}
-	// }
+	if *gainData.Detail.Trend == "negative" {
+		m.model.Gain = -gain
+	}
 
-	// return model, nil
+	return nil
 }
 
 func (m *DataMapper) getInstrument(ctx context.Context, isin string) (traderepublic.InstrumentJson, error) {

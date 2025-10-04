@@ -1218,6 +1218,9 @@ type PaymentRowDetail struct {
 	// Text corresponds to the JSON schema field "text".
 	Text string `json:"text" yaml:"text" mapstructure:"text"`
 
+	// Trend corresponds to the JSON schema field "trend".
+	Trend *string `json:"trend,omitempty" yaml:"trend,omitempty" mapstructure:"trend,omitempty"`
+
 	// Type corresponds to the JSON schema field "type".
 	Type string `json:"type" yaml:"type" mapstructure:"type"`
 }

@@ -43,7 +43,7 @@ var (
 	DataSharePrice       = dataTitles{"Share price"} // Title map for share price in payment details
 	DataFee              = dataTitles{"Fee"}         // Title map for commission in payment details
 	DataProfit           = dataTitles{"Profit"}
-	DataGain             = dataTitles{"Gain"}
+	DataGain             = dataTitles{"Gain", "Loss"}
 	DataTotal            = dataTitles{"Total"} // Title map for total in payment details
 	DataTax              = dataTitles{"Tax"}
 	DataDividendPerShare = dataTitles{"Dividend per share"}
