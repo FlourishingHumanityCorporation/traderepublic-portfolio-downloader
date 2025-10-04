@@ -59,20 +59,20 @@ func ExtractInstrumentISINFromIcon(src string) (string, error) {
 	return matches[1], nil
 }
 
-func ParseFloatFromResponse(src string) (float64, error) {
-	pattern := regexp.MustCompile(`(\d+(?:\.\d+)*|\d+)(?:,(\d+))?`)
+func ParseStringToFloat64(src string) (float64, error) {
+	pattern := regexp.MustCompile(`(\d+(?:,\d+)*|\d+)(?:\.(\d+))?`)
 	matches := pattern.FindStringSubmatch(src)
 
 	if len(matches) == 0 {
 		return 0, fmt.Errorf("%w: '%s'", ErrPatternMismatch, src)
 	}
 
-	wholePart := matches[1]
-	decimalPart := matches[2]
+	wholePart := strings.Join(matches[1:len(matches)-1], "")
+	decimalPart := matches[len(matches)-1]
 	strFloat := wholePart
 
 	if decimalPart != "" {
-		strFloat = strings.ReplaceAll(wholePart, ".", "") + "." + decimalPart
+		strFloat = strings.ReplaceAll(wholePart, ",", "") + "." + decimalPart
 	}
 
 	value, err := strconv.ParseFloat(strFloat, 64)

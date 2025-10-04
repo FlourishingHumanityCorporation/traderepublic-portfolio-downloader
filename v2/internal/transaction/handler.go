@@ -59,6 +59,8 @@ func (h *Handler) Handle(event bus.Event) {
 	err = mapper.Map()
 	if err != nil {
 		slog.Error("failed to map", "id", event.ID, "err", err)
+
+		return
 	}
 
 	h.eventBus.Publish(bus.NewEvent(bus.TopicModelReady, model.ID, model))

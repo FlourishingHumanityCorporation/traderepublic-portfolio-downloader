@@ -9,6 +9,8 @@ import (
 
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/pkg/traderepublic"
 	gocache "github.com/patrickmn/go-cache"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -135,7 +137,7 @@ func (m *DataMapper) MapID() {
 
 // MapStatus extracts transaction status from header
 func (m *DataMapper) MapStatus() {
-	m.model.Status = string(m.header.Data.Status)
+	m.model.Status = cases.Title(language.English).String(string(m.header.Data.Status))
 }
 
 // mapTimestamp parses and sets transaction timestamp
@@ -188,7 +190,7 @@ func (m *DataMapper) mapAsset() error {
 	}
 
 	m.model.AssetName = *instr.ShortName
-	m.model.AssetType = string(instr.TypeId)
+	m.model.AssetType = cases.Title(language.English).String(string(instr.TypeId))
 
 	return nil
 }
@@ -211,6 +213,12 @@ func (m *DataMapper) mapShares() error {
 			return fmt.Errorf("failed to find shares data: %w", err)
 		}
 
+		if shares.Detail.DisplayValue != nil {
+			str = shares.Detail.DisplayValue.Text
+
+			break
+		}
+
 		str = shares.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
 		// Current format: shares in overview section
@@ -222,17 +230,19 @@ func (m *DataMapper) mapShares() error {
 		str = *trn.Detail.DisplayValue.Prefix
 	}
 
-	shares, err := ParseFloatFromResponse(str)
+	shares, err := ParseStringToFloat64(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from shares: %w", err)
 	}
 
-	m.model.Shares = shares
-
 	// Make shares negative for sell transactions
 	if slices.Contains(GainTypes, m.model.Type) {
 		m.model.Shares = -shares
+
+		return nil
 	}
+
+	m.model.Shares = shares
 
 	return nil
 }
@@ -254,6 +264,12 @@ func (m *DataMapper) mapSharePrice() error {
 			return fmt.Errorf("failed to find shares data: %w", err)
 		}
 
+		if dividendsPerShare.Detail.DisplayValue != nil {
+			str = dividendsPerShare.Detail.DisplayValue.Text
+
+			break
+		}
+
 		str = dividendsPerShare.Detail.Text
 	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502:
 		// Pre-2025 format: share price in transaction section
@@ -267,6 +283,12 @@ func (m *DataMapper) mapSharePrice() error {
 			return fmt.Errorf("failed to find shares data: %w", err)
 		}
 
+		if sharePrice.Detail.DisplayValue != nil {
+			str = sharePrice.Detail.DisplayValue.Text
+
+			break
+		}
+
 		str = sharePrice.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
 		// Current format: share price in overview section
@@ -278,7 +300,7 @@ func (m *DataMapper) mapSharePrice() error {
 		str = trn.Detail.DisplayValue.Text
 	}
 
-	sharePrice, err := ParseFloatFromResponse(str)
+	sharePrice, err := ParseStringToFloat64(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from share price: %w", err)
 	}
@@ -308,6 +330,12 @@ func (m *DataMapper) mapFee() error {
 			return fmt.Errorf("failed to find fee data: %w", err)
 		}
 
+		if fee.Detail.DisplayValue != nil {
+			str = fee.Detail.DisplayValue.Text
+
+			break
+		}
+
 		str = fee.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
 		// Current format: fee in overview section
@@ -316,12 +344,12 @@ func (m *DataMapper) mapFee() error {
 			return fmt.Errorf("failed to find fee data: %w", err)
 		}
 
-		str = fee.Detail.Text
+		str = fee.Detail.DisplayValue.Text
 	}
 
 	// Handle free transactions
 	if str != "Free" {
-		fee, err := ParseFloatFromResponse(str)
+		fee, err := ParseStringToFloat64(str)
 		if err != nil {
 			return fmt.Errorf("failed to parse float from fee: %w", err)
 		}
@@ -349,6 +377,12 @@ func (m *DataMapper) mapTotal() error {
 			return fmt.Errorf("failed to find total data: %w", err)
 		}
 
+		if total.Detail.DisplayValue != nil {
+			str = total.Detail.DisplayValue.Text
+
+			break
+		}
+
 		str = total.Detail.Text
 	case TypeSavingsPlan, TypeLimitSell, TypeSellOrder, TypeBuyOrder:
 		// Current format: total in overview section
@@ -357,21 +391,23 @@ func (m *DataMapper) mapTotal() error {
 			return fmt.Errorf("failed to find total data: %w", err)
 		}
 
-		str = total.Detail.Text
+		str = total.Detail.DisplayValue.Text
 	}
 
-	total, err := ParseFloatFromResponse(str)
+	total, err := ParseStringToFloat64(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from total: %w", err)
 	}
 
-	// Default to debit (money going out)
-	m.model.Debit = total
-
 	// For credit transactions (money coming in), set credit field
 	if slices.Contains(CreditTypes, m.model.Type) {
 		m.model.Credit = total
+
+		return nil
 	}
+
+	// Default to debit (money going out)
+	m.model.Debit = total
 
 	return nil
 }
@@ -395,7 +431,7 @@ func (m *DataMapper) mapProfit() error {
 
 	str := profitData.Detail.Text
 
-	profit, err := ParseFloatFromResponse(str)
+	profit, err := ParseStringToFloat64(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from profit: %w", err)
 	}
@@ -431,16 +467,18 @@ func (m *DataMapper) mapGain() error {
 
 	str := gainData.Detail.Text
 
-	gain, err := ParseFloatFromResponse(str)
+	gain, err := ParseStringToFloat64(str)
 	if err != nil {
 		return fmt.Errorf("failed to parse float from gain: %w", err)
 	}
 
-	m.model.Gain = gain
-
 	if *gainData.Detail.Trend == "negative" {
 		m.model.Gain = -gain
+
+		return nil
 	}
+
+	m.model.Gain = gain
 
 	return nil
 }
