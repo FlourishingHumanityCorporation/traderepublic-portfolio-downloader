@@ -78,14 +78,15 @@ func main() {
 	csvWriter := file.NewCSVWriter()
 	csvHandler := file.NewCSVHandler(internal.CSVFilename, csvWriter)
 
-	eventBus.Subscribe(bus.TopicTimelineTransactionsReceived, ttHandler.Handle)
+	eventBus.Subscribe(bus.TopicAuthenticated, ttHandler.HandleFetch)
+	eventBus.Subscribe(bus.TopicTimelineTransactionsReceived, ttHandler.HandleReceived)
 	eventBus.Subscribe(bus.TopicTimelineDetailsV2Received, tdHandler.Handle)
 	eventBus.Subscribe(bus.TopicInstrumentFetch, instrHandler.HandleFetch)
 	eventBus.Subscribe(bus.TopicInstrumentReceived, instrHandler.HandleReceived)
 	eventBus.Subscribe(bus.TopicTimelineDetailsV2Received, trnHandler.Handle)
-	eventBus.Subscribe(bus.TopicModelReady, csvHandler.Handle)
+	eventBus.Subscribe(bus.TopicModelCreated, csvHandler.Handle)
 
-	app := NewApp(auth.NewClient(console.NewInputHandler(), apiClient), credentialsService, msgClient, eventBus)
+	app := NewApp(auth.NewClient(console.NewInputHandler(), apiClient), credentialsService, eventBus)
 
 	err = app.Run()
 	if err != nil {

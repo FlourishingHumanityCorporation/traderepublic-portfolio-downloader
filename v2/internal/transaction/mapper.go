@@ -156,6 +156,11 @@ func (m *DataMapper) mapTimestamp() error {
 
 // mapISIN extracts ISIN from either action payload or icon data
 func (m *DataMapper) mapISIN() error {
+	// Interest payments don't have ISIN
+	if m.model.Type == TypeInterestPayment {
+		return nil
+	}
+
 	// Try to get ISIN from action payload first
 	if m.header.Action == nil {
 		// Fallback: extract ISIN from icon data
@@ -227,7 +232,14 @@ func (m *DataMapper) mapShares() error {
 			return fmt.Errorf("failed to find transaction data: %w", err)
 		}
 
+		if trn.Detail.DisplayValue.Prefix == nil {
+			return fmt.Errorf("failed to read trn.Detail.DisplayValue.Prefix: nil '%s'", m.model.ID)
+		}
+
 		str = *trn.Detail.DisplayValue.Prefix
+	case TypeInterestPayment:
+		// Interest payments don't have shares
+		return nil
 	}
 
 	shares, err := ParseStringToFloat64(str)
@@ -298,6 +310,9 @@ func (m *DataMapper) mapSharePrice() error {
 		}
 
 		str = trn.Detail.DisplayValue.Text
+	case TypeInterestPayment:
+		// Interest payments don't have share price
+		return nil
 	}
 
 	sharePrice, err := ParseStringToFloat64(str)
@@ -345,6 +360,9 @@ func (m *DataMapper) mapFee() error {
 		}
 
 		str = fee.Detail.DisplayValue.Text
+	case TypeInterestPayment:
+		// Interest payments don't have fees
+		return nil
 	}
 
 	// Handle free transactions
@@ -365,7 +383,7 @@ func (m *DataMapper) mapTotal() error {
 	var str string
 
 	switch m.model.Type {
-	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome:
+	case TypeSavingsPlanPre202502, TypeBuyOrderPre202502, TypeSellOrderPre202502, TypeLimitSellPre202502, TypeDividendsIncome, TypeInterestPayment:
 		// Pre-2025 format: total in transaction section
 		trnSection, err := m.details.FindSection(traderepublic.SectionTransaction)
 		if err != nil {
@@ -401,19 +419,24 @@ func (m *DataMapper) mapTotal() error {
 
 	// For credit transactions (money coming in), set credit field
 	if slices.Contains(CreditTypes, m.model.Type) {
-		m.model.Credit = total
+		m.model.Credit = &total
 
 		return nil
 	}
 
 	// Default to debit (money going out)
-	m.model.Debit = total
+	m.model.Debit = &total
 
 	return nil
 }
 
 // mapProfit extracts realized profit for sell transactions
 func (m *DataMapper) mapProfit() error {
+	// Interest payments and dividends don't have profit
+	if m.model.Type == TypeInterestPayment {
+		return nil
+	}
+
 	// Skip non-gain transactions and dividends
 	if m.model.Type == TypeDividendsIncome || !slices.Contains(GainTypes, m.model.Type) {
 		return nil
@@ -436,14 +459,14 @@ func (m *DataMapper) mapProfit() error {
 		return fmt.Errorf("failed to parse float from profit: %w", err)
 	}
 
-	m.model.Profit = profit
+	m.model.Profit = &profit
 
 	return nil
 }
 
 // mapGain extracts gain/loss percentage for sell transactions or dividend amount
 func (m *DataMapper) mapGain() error {
-	if m.model.Type == TypeDividendsIncome {
+	if m.model.Type == TypeDividendsIncome || m.model.Type == TypeInterestPayment {
 		// For dividends, gain equals credit amount
 		m.model.Gain = m.model.Credit
 
@@ -473,18 +496,18 @@ func (m *DataMapper) mapGain() error {
 	}
 
 	if *gainData.Detail.Trend == "negative" {
-		m.model.Gain = -gain
+		negativeGain := -gain
+		m.model.Gain = &negativeGain
 
 		return nil
 	}
 
-	m.model.Gain = gain
+	m.model.Gain = &gain
 
 	return nil
 }
 
 func (m *DataMapper) getInstrument(ctx context.Context, isin string) (traderepublic.InstrumentJson, error) {
-
 	for {
 		select {
 		case <-ctx.Done():

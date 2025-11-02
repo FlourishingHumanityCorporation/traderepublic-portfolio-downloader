@@ -195,7 +195,7 @@ type InstrumentJson struct {
 	TaxProviderInfo *InstrumentJsonTaxProviderInfo `json:"taxProviderInfo,omitempty" yaml:"taxProviderInfo,omitempty" mapstructure:"taxProviderInfo,omitempty"`
 
 	// TypeId corresponds to the JSON schema field "typeId".
-	TypeId InstrumentJsonTypeId `json:"typeId" yaml:"typeId" mapstructure:"typeId"`
+	TypeId string `json:"typeId" yaml:"typeId" mapstructure:"typeId"`
 
 	// Wkn corresponds to the JSON schema field "wkn".
 	Wkn *string `json:"wkn,omitempty" yaml:"wkn,omitempty" mapstructure:"wkn,omitempty"`
@@ -397,40 +397,6 @@ type InstrumentJsonTaxProviderInfoWmdaten struct {
 
 	// InstrumentTypeF corresponds to the JSON schema field "instrumentTypeF".
 	InstrumentTypeF *string `json:"instrumentTypeF,omitempty" yaml:"instrumentTypeF,omitempty" mapstructure:"instrumentTypeF,omitempty"`
-}
-
-type InstrumentJsonTypeId string
-
-const InstrumentJsonTypeIdCrypto InstrumentJsonTypeId = "crypto"
-const InstrumentJsonTypeIdEtf InstrumentJsonTypeId = "etf"
-const InstrumentJsonTypeIdFund InstrumentJsonTypeId = "fund"
-const InstrumentJsonTypeIdStock InstrumentJsonTypeId = "stock"
-
-var enumValues_InstrumentJsonTypeId = []interface{}{
-	"crypto",
-	"fund",
-	"stock",
-	"etf",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *InstrumentJsonTypeId) UnmarshalJSON(value []byte) error {
-	var v string
-	if err := json.Unmarshal(value, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_InstrumentJsonTypeId {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_InstrumentJsonTypeId, v)
-	}
-	*j = InstrumentJsonTypeId(v)
-	return nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

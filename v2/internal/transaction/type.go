@@ -192,22 +192,22 @@ func (r *TypeResolver) SetType(details traderepublic.TimelineDetailsJson, model 
 		}
 	}
 
-	// // Check for interest payment transactions
-	// _, err = overview.FindData(traderepublic.DataAverageBalance)
-	// if err == nil {
-	// 	model.Type = TypeInterestPayment
+	// Check for interest payment transactions
+	_, err = overview.FindData(traderepublic.DataAverageBalance)
+	if err == nil {
+		model.Type = TypeInterestPayment
 
-	// 	return
-	// }
-	// steps, err := details.SectionSteps()
-	// if err == nil {
-	// 	_, err = steps.FindStep(traderepublic.StepInterestPayment)
-	// 	if err == nil {
-	// 		model.Type = TypeInterestPayment
+		return nil
+	}
+	steps, err := details.SectionSteps()
+	if err == nil {
+		_, err = steps.FindStep(traderepublic.StepInterestPayment)
+		if err == nil {
+			model.Type = TypeInterestPayment
 
-	// 		return
-	// 	}
-	// }
+			return nil
+		}
+	}
 
 	// // Check for saveback transactions
 	// _, err = overview.FindData(traderepublic.DataSaveback)

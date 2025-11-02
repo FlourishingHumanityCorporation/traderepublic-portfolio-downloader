@@ -167,33 +167,7 @@
             }
           },
           "eventType": {
-            "type": "string",
-            "enum": [
-              "card_successful_transaction",
-              "ssp_corporate_action_invoice_cash",
-              "trading_savingsplan_executed",
-              "benefits_saveback_execution",
-              "card_failed_transaction",
-              "INTEREST_PAYOUT",
-              "INCOMING_TRANSFER_DELEGATION",
-              "card_successful_verification",
-              "card_failed_verification",
-              "card_refund",
-              "trading_trade_executed",
-              "OUTGOING_TRANSFER_DELEGATION",
-              "timeline_legacy_migrated_events",
-              "INCOMING_TRANSFER",
-              "benefits_spare_change_execution",
-              "PAYMENT_INBOUND",
-              "PAYMENT_INBOUND_SEPA_DIRECT_DEBIT",
-              "PAYMENT_OUTBOUND",
-              "ORDER_EXECUTED",
-              "TRADE_INVOICE",
-              "SAVINGS_PLAN_EXECUTED",
-              "SAVINGS_PLAN_INVOICE_CREATED",
-              "INTEREST_PAYOUT_CREATED",
-              "CREDIT"
-            ]
+            "type": "string"
           },
           "cashAccountNumber": {
             "type": [

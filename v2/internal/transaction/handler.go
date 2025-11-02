@@ -63,5 +63,5 @@ func (h *Handler) Handle(event bus.Event) {
 		return
 	}
 
-	h.eventBus.Publish(bus.NewEvent(bus.TopicModelReady, model.ID, model))
+	h.eventBus.Publish(bus.NewEvent(bus.TopicModelCreated, model.ID, model))
 }

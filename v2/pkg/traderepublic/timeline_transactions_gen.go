@@ -27,7 +27,7 @@ type TimelineTransaction struct {
 	Deleted bool `json:"deleted" yaml:"deleted" mapstructure:"deleted"`
 
 	// EventType corresponds to the JSON schema field "eventType".
-	EventType TimelineTransactionEventType `json:"eventType" yaml:"eventType" mapstructure:"eventType"`
+	EventType string `json:"eventType" yaml:"eventType" mapstructure:"eventType"`
 
 	// Hidden corresponds to the JSON schema field "hidden".
 	Hidden bool `json:"hidden" yaml:"hidden" mapstructure:"hidden"`
@@ -175,80 +175,6 @@ func (j *TimelineTransactionAvatar) UnmarshalJSON(value []byte) error {
 		return err
 	}
 	*j = TimelineTransactionAvatar(plain)
-	return nil
-}
-
-type TimelineTransactionEventType string
-
-const TimelineTransactionEventTypeBenefitsSavebackExecution TimelineTransactionEventType = "benefits_saveback_execution"
-const TimelineTransactionEventTypeBenefitsSpareChangeExecution TimelineTransactionEventType = "benefits_spare_change_execution"
-const TimelineTransactionEventTypeCREDIT TimelineTransactionEventType = "CREDIT"
-const TimelineTransactionEventTypeCardFailedTransaction TimelineTransactionEventType = "card_failed_transaction"
-const TimelineTransactionEventTypeCardFailedVerification TimelineTransactionEventType = "card_failed_verification"
-const TimelineTransactionEventTypeCardRefund TimelineTransactionEventType = "card_refund"
-const TimelineTransactionEventTypeCardSuccessfulTransaction TimelineTransactionEventType = "card_successful_transaction"
-const TimelineTransactionEventTypeCardSuccessfulVerification TimelineTransactionEventType = "card_successful_verification"
-const TimelineTransactionEventTypeINCOMINGTRANSFER TimelineTransactionEventType = "INCOMING_TRANSFER"
-const TimelineTransactionEventTypeINCOMINGTRANSFERDELEGATION TimelineTransactionEventType = "INCOMING_TRANSFER_DELEGATION"
-const TimelineTransactionEventTypeINTERESTPAYOUT TimelineTransactionEventType = "INTEREST_PAYOUT"
-const TimelineTransactionEventTypeINTERESTPAYOUTCREATED TimelineTransactionEventType = "INTEREST_PAYOUT_CREATED"
-const TimelineTransactionEventTypeORDEREXECUTED TimelineTransactionEventType = "ORDER_EXECUTED"
-const TimelineTransactionEventTypeOUTGOINGTRANSFERDELEGATION TimelineTransactionEventType = "OUTGOING_TRANSFER_DELEGATION"
-const TimelineTransactionEventTypePAYMENTINBOUND TimelineTransactionEventType = "PAYMENT_INBOUND"
-const TimelineTransactionEventTypePAYMENTINBOUNDSEPADIRECTDEBIT TimelineTransactionEventType = "PAYMENT_INBOUND_SEPA_DIRECT_DEBIT"
-const TimelineTransactionEventTypePAYMENTOUTBOUND TimelineTransactionEventType = "PAYMENT_OUTBOUND"
-const TimelineTransactionEventTypeSAVINGSPLANEXECUTED TimelineTransactionEventType = "SAVINGS_PLAN_EXECUTED"
-const TimelineTransactionEventTypeSAVINGSPLANINVOICECREATED TimelineTransactionEventType = "SAVINGS_PLAN_INVOICE_CREATED"
-const TimelineTransactionEventTypeSspCorporateActionInvoiceCash TimelineTransactionEventType = "ssp_corporate_action_invoice_cash"
-const TimelineTransactionEventTypeTRADEINVOICE TimelineTransactionEventType = "TRADE_INVOICE"
-const TimelineTransactionEventTypeTimelineLegacyMigratedEvents TimelineTransactionEventType = "timeline_legacy_migrated_events"
-const TimelineTransactionEventTypeTradingSavingsplanExecuted TimelineTransactionEventType = "trading_savingsplan_executed"
-const TimelineTransactionEventTypeTradingTradeExecuted TimelineTransactionEventType = "trading_trade_executed"
-
-var enumValues_TimelineTransactionEventType = []interface{}{
-	"card_successful_transaction",
-	"ssp_corporate_action_invoice_cash",
-	"trading_savingsplan_executed",
-	"benefits_saveback_execution",
-	"card_failed_transaction",
-	"INTEREST_PAYOUT",
-	"INCOMING_TRANSFER_DELEGATION",
-	"card_successful_verification",
-	"card_failed_verification",
-	"card_refund",
-	"trading_trade_executed",
-	"OUTGOING_TRANSFER_DELEGATION",
-	"timeline_legacy_migrated_events",
-	"INCOMING_TRANSFER",
-	"benefits_spare_change_execution",
-	"PAYMENT_INBOUND",
-	"PAYMENT_INBOUND_SEPA_DIRECT_DEBIT",
-	"PAYMENT_OUTBOUND",
-	"ORDER_EXECUTED",
-	"TRADE_INVOICE",
-	"SAVINGS_PLAN_EXECUTED",
-	"SAVINGS_PLAN_INVOICE_CREATED",
-	"INTEREST_PAYOUT_CREATED",
-	"CREDIT",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *TimelineTransactionEventType) UnmarshalJSON(value []byte) error {
-	var v string
-	if err := json.Unmarshal(value, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_TimelineTransactionEventType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TimelineTransactionEventType, v)
-	}
-	*j = TimelineTransactionEventType(v)
 	return nil
 }
 

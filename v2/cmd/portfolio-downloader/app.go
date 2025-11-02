@@ -1,32 +1,27 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/internal/bus"
-	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/internal/message"
 	"github.com/dhojayev/traderepublic-portfolio-downloader/v2/internal/traderepublic/auth"
 )
 
 type App struct {
 	authClient         *auth.Client
 	credentialsService auth.CredentialsServiceInterface
-	messageClient      message.ClientInterface
 	eventBus           *bus.EventBus
 }
 
 func NewApp(
 	authClient *auth.Client,
 	credentialsService auth.CredentialsServiceInterface,
-	messageClient message.ClientInterface,
 	eventBus *bus.EventBus,
 ) App {
 	return App{
 		authClient:         authClient,
 		credentialsService: credentialsService,
-		messageClient:      messageClient,
 		eventBus:           eventBus,
 	}
 }
@@ -44,10 +39,7 @@ func (a *App) Run() error {
 
 	slog.Info("Starting downloading transactions")
 
-	err = a.messageClient.SubscribeToTimelineTransactions(context.Background())
-	if err != nil {
-		return fmt.Errorf("subscription failed: %w", err)
-	}
+	a.eventBus.Publish(bus.NewEvent(bus.TopicAuthenticated, "auth", nil))
 
 	return nil
 }

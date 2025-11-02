@@ -91,11 +91,11 @@ func TestDataMapper_Map(t *testing.T) {
 			assert.NotEmpty(t, model.SharePrice)
 			assert.NotNil(t, model.Fee)
 
-			if model.Debit == 0 {
+			if model.Debit == nil {
 				assert.NotEmpty(t, model.Credit)
 			}
 
-			if model.Credit == 0 {
+			if model.Credit == nil {
 				assert.NotEmpty(t, model.Debit)
 			}
 

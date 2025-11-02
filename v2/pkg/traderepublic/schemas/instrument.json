@@ -51,8 +51,7 @@
       "type": "string"
     },
     "typeId": {
-      "type": "string",
-      "enum": ["crypto", "fund", "stock", "etf"]
+      "type": "string"
     },
     "legalTypeId": {
       "type": "string"

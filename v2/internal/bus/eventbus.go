@@ -39,6 +39,9 @@ func New() *EventBus {
 	}
 }
 
+// Subscribe registers an event handler for a specific topic.
+// The method is thread-safe and uses a write lock to prevent concurrent modifications.
+// Multiple handlers can be registered for the same topic, and they will be called in the order they were added.
 func (b *EventBus) Subscribe(topic string, handler EventHandler) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -46,6 +49,11 @@ func (b *EventBus) Subscribe(topic string, handler EventHandler) {
 	b.subscribers[topic] = append(b.subscribers[topic], handler)
 }
 
+// Publish sends an event to all registered subscribers for the event's topic.
+// The method is thread-safe and uses a read lock to allow concurrent publishing.
+// Each subscriber handler is executed in a separate goroutine to prevent blocking.
+// If no subscribers are found for the event topic, the event is silently ignored.
+// The event publication is logged at debug level with the topic and event ID.
 func (b *EventBus) Publish(event Event) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
@@ -57,4 +65,9 @@ func (b *EventBus) Publish(event Event) {
 	}
 
 	slog.Debug("event published", "topic", event.Topic, "id", event.ID)
+}
+
+// Retry republishes the given event to the event bus.
+func (b *EventBus) Retry(event Event) {
+	b.Publish(event)
 }
