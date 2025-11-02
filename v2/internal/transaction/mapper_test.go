@@ -84,12 +84,15 @@ func TestDataMapper_Map(t *testing.T) {
 			assert.NotEmpty(t, model.ID)
 			assert.NotEmpty(t, model.Status)
 			assert.NotEmpty(t, model.Timestamp)
-			assert.NotEmpty(t, model.ISIN)
-			assert.NotEmpty(t, model.AssetName)
-			assert.NotEmpty(t, model.AssetType)
-			assert.NotEmpty(t, model.Shares)
-			assert.NotEmpty(t, model.SharePrice)
-			assert.NotNil(t, model.Fee)
+
+			if model.Type != transaction.TypeInterestPayment {
+				assert.NotEmpty(t, model.ISIN)
+				assert.NotEmpty(t, model.AssetName)
+				assert.NotEmpty(t, model.AssetType)
+				assert.NotEmpty(t, model.Shares)
+				assert.NotEmpty(t, model.SharePrice)
+				assert.NotNil(t, model.Fee)
+			}
 
 			if model.Debit == nil {
 				assert.NotEmpty(t, model.Credit)
