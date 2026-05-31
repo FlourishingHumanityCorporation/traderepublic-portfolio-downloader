@@ -4,5 +4,7 @@
 /.refresh
 /responses
 /documents
+/v2/responses
+/v2/documents
 vendor
 .DS_Store
