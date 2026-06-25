@@ -1,0 +1,22 @@
+.git/
+.vscode/
+.venv*/
+__pycache__/
+tests/
+
+# Local runtime/session outputs
+.session
+.refresh
+responses/
+documents/
+transactions.csv
+
+# Build artifacts and binaries
+bin/
+dist/
+build/
+coverage/
+
+# Generated Go cache-style outputs should stay out of agent context.
+*.test
+*.prof

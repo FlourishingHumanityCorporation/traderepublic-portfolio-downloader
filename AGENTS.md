@@ -11,7 +11,7 @@ Repository in the CodeProjects workspace.
 - Workspace path: `tools/traderepublic-portfolio-downloader`
 - Repository name: `traderepublic-portfolio-downloader`
 - Kind: developer/operator tool
-- Registry entry: not listed in `.meta/projects.json`; treat local docs as authoritative.
+- Registry entry: `traderepublic-portfolio-downloader` in `.meta/projects.json`
 
 ## Tech Stack Signals
 
@@ -32,7 +32,9 @@ Repository in the CodeProjects workspace.
 
 ## Commands
 
-- Makefile present: run `make help` or inspect targets before inventing commands.
+- `make check` - run local Go tests with `go test -v ./...`.
+- `make test` - same test surface as `make check`.
+- Do not run the downloader binary, Docker Compose, `make reset`, or response/document writing paths during registry or audit work unless the user explicitly approves live brokerage operations.
 
 ## Important Files
 
@@ -40,6 +42,8 @@ Repository in the CodeProjects workspace.
 - `Makefile`
 - `go.mod`
 - `docker-compose.yml`
+- `appcheck.toml`
+- `REBUILD.md`
 
 ## Verification
 

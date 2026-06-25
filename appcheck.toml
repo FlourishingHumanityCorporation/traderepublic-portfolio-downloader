@@ -1,0 +1,32 @@
+[app]
+name = "traderepublic-portfolio-downloader"
+type = "tool"
+
+[env]
+required = []
+optional = []
+
+[loc]
+max_lines = 900
+extensions = [".go"]
+
+[docs]
+enabled = false
+
+[testing]
+service_markers = ["trade_republic", "brokerage", "external_api", "filesystem", "live_auth", "document_download"]
+xfail_require_strict = true
+
+[standards]
+definitions_path = "/Users/paulrohde/CodeProjects/docs/standards"
+
+[compat]
+enabled = true
+scan_deprecated_usage = true
+
+[[custom_checks]]
+name = "check"
+command = "cd ~/CodeProjects/tools/traderepublic-portfolio-downloader && make check"
+description = "Trade Republic downloader Go tests pass without running the downloader, Docker, reset, live brokerage auth/API calls, document downloads, or response writes"
+timeout = 180
+fail_on_stderr = false
