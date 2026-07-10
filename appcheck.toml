@@ -30,3 +30,21 @@ command = "cd ~/CodeProjects/tools/traderepublic-portfolio-downloader && make ch
 description = "Trade Republic downloader Go tests pass without running the downloader, Docker, reset, live brokerage auth/API calls, document downloads, or response writes"
 timeout = 180
 fail_on_stderr = false
+
+[[conventions.exemptions]]
+family = "observability-routing"
+status = "not-applicable"
+source = "appcheck.toml"
+reason = "Operator-invoked tool with no repo-owned scheduled process or proactive background degradation surface; failures return directly to the invoking operator."
+
+# STD-015: minimum function baseline derived from the approved 2026-07-09
+# registry evidence review. Expand during quarterly function-fit review.
+[functions]
+enabled = true
+
+[[functions.items]]
+id = "F1"
+statement = "ensure that the operator can retrieve Trade Republic portfolio records with live authentication and writes kept opt-in"
+consumers = ["operator"]
+kind = "service"
+liveness = "manual"
