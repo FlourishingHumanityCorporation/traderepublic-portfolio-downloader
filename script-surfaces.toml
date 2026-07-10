@@ -1,0 +1,10 @@
+schema = 1
+project = "traderepublic-portfolio-downloader"
+
+[[surface]]
+id = "generate-rest-client"
+path = "scripts/generate-rest-client.sh"
+purpose = "Regenerate the repository REST client from its source API contract during development."
+owner = "traderepublic-portfolio-downloader"
+lifecycle = "maintenance"
+promotion = "keep-local"
