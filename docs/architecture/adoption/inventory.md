@@ -1,6 +1,6 @@
 ---
 created: 2026-07-23
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 ---
 # STD-028 pre-move inventory — traderepublic-portfolio-downloader
 
@@ -169,3 +169,10 @@ identity string that would be invalidated by the bounded deletion.
 
 No architecture baseline entry is expected after the stale prototype is
 deleted and every remaining path has one truthful owner.
+
+## Review and promotion
+
+Independent contract and quality review approved exact tested revision
+`7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9`. The project is
+`CONFORMANT`. Publication of the shared control-plane candidate remains a
+fleet-level final-batch boundary and is not claimed by this project record.

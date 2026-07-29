@@ -1,14 +1,14 @@
 {
   "schema_version": "traderepublic-portfolio-downloader.std028-verification.v2",
-  "recorded_at": "2026-07-29T05:41:34Z",
+  "recorded_at": "2026-07-29T15:50:00Z",
   "registry_key": "traderepublic-portfolio-downloader",
   "standard_version": "1.37.0",
   "architecture_scope": "tools/traderepublic-portfolio-downloader",
   "effective_git_root": "tools/traderepublic-portfolio-downloader",
   "classification": "SUBSTANTIAL",
-  "status": "IN_REVIEW",
+  "status": "CONFORMANT",
   "tested_revision": "7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9",
-  "publication_revision": "0526d3b807d9ad3e00e1b3049d97e674664e4637",
+  "publication_revision": "54b3bf78beb78113f1854bbe7e7189230169a7d2",
   "worktree_identity": {
     "branch": "codex/std028-traderepublic-zero-debt-20260728",
     "original_base_revision": "29fdf803aab8bc886af75a0073e2542d31e27b41",
@@ -69,7 +69,7 @@
     "generated_pre_commit": {
       "path": ".pre-commit-config.yaml",
       "sha256": "bbb0aa3a48f29a763340e2e9be6bde251a7225157e63bd07c46f0d951fafd0e5",
-      "generator_candidate_revision": "4b37ef8"
+      "generator_candidate_revision": "0dd3fba"
     },
     "agent_guidance": {
       "path": "AGENTS.md",
@@ -101,15 +101,15 @@
     },
     "inventory_record": {
       "path": "docs/architecture/adoption/inventory.md",
-      "sha256": "ba40cc8d6fb4ba3feadb90f1ce0cc8f93a2eebd86685d6d4c83f1e8c5e5a3e28"
+      "sha256": "2601174f6f84efd4fc856390b46413f687c582bbb0ca6767de7f08eb1c1d33ce"
     },
     "contract_review_record": {
       "path": "docs/architecture/adoption/contract-review.md",
-      "sha256": "8bad45b3c05e2fb502a038220f34d66fb25f21e961b6f4ffcf48f7dcdf5f57ec"
+      "sha256": "0c61b13e79b55b511501a371b20697126c845dc2c35fe553ac1b8826b0b1b1e9"
     },
     "quality_review_record": {
       "path": "docs/architecture/adoption/quality-review.md",
-      "sha256": "7cddeeb175362a0cbd411bc75c793464722693431c01fb4d5893ed480852bedf"
+      "sha256": "8b5f95ee7c88c091409efb7946ee5d2320ca4d22049b47384bb127c7e188a7bd"
     }
   },
   "architecture_result": {
@@ -169,6 +169,11 @@
       "result": "All 190 generator tests passed with the exact JSONC exclusion override."
     },
     {
+      "command": "candidate-bound sync-pre-commit-configs --check --project traderepublic-portfolio-downloader",
+      "status": "pass",
+      "result": "Candidate script, override registry, and project registry at control-plane revision 0dd3fba reproduce the checked-in config exactly, including the JSONC exclusion."
+    },
+    {
       "command": "git diff --check",
       "status": "pass",
       "result": "No whitespace errors."
@@ -188,8 +193,8 @@
     "status": "pass",
     "remote": "fhc",
     "branch": "main",
-    "published_revision": "0526d3b807d9ad3e00e1b3049d97e674664e4637",
-    "verified_at": "2026-07-29T05:41:34Z",
+    "published_revision": "54b3bf78beb78113f1854bbe7e7189230169a7d2",
+    "verified_at": "2026-07-29T15:50:00Z",
     "tested_revision_reachable_from_published_revision": true,
     "canonical_ahead_behind": "0/0",
     "installed_pre_push": "pass",
@@ -197,29 +202,29 @@
   },
   "control_plane": {
     "candidate_branch": "codex/std028-hook-generator-v2-20260728",
-    "candidate_revision": "4b37ef8",
+    "candidate_revision": "0dd3fba",
     "architecture_check_command": "make architecture-check",
     "jsonc_exclusion": "^\\.vscode/launch\\.json$",
-    "canonical_publication_status": "pending"
+    "canonical_publication_status": "pending final fleet batch"
   },
   "independent_reviews": {
     "contract": {
       "path": "docs/architecture/adoption/contract-review.md",
-      "status": "PENDING_INDEPENDENT_REVIEW"
+      "status": "APPROVED",
+      "candidate_revision": "7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9"
     },
     "quality": {
       "path": "docs/architecture/adoption/quality-review.md",
-      "status": "PENDING_INDEPENDENT_REVIEW"
-    }
+      "status": "APPROVED",
+      "candidate_revision": "7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9"
+    },
+    "scope": "Independent read-only review approved both contract and quality at the exact tested revision with no blocker."
   },
   "known_non_acceptance_surfaces": [
     "The root REST generator references absent openapi-rest.yaml and was not run.",
     "Twenty-three v2 test events remain explicit skips for terminal or incomplete rewrite behavior.",
     "No downloader binary, brokerage authentication/API/WebSocket request, Docker command, reset target, document/response writer, code generator, or release build was run."
   ],
-  "blockers": [
-    "The isolated control-plane candidate is not yet published.",
-    "Independent contract and quality reviews have not approved exact revision 7b8a88e, so the ledger must remain IN_REVIEW."
-  ],
-  "next_action": "Publish the control-plane batch and retain IN_REVIEW until exact-revision independent reviews exist."
+  "blockers": [],
+  "next_action": "Promote traderepublic-portfolio-downloader to CONFORMANT in the canonical rollout ledger."
 }
