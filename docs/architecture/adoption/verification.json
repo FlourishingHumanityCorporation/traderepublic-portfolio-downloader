@@ -221,5 +221,5 @@
     "The isolated control-plane candidate is not yet published.",
     "Independent contract and quality reviews have not approved exact revision 7b8a88e, so the ledger must remain IN_REVIEW."
   ],
-  "next_action": "Publish this final evidence amendment, publish the control-plane batch, and retain IN_REVIEW until exact-revision independent reviews exist."
+  "next_action": "Publish the control-plane batch and retain IN_REVIEW until exact-revision independent reviews exist."
 }
