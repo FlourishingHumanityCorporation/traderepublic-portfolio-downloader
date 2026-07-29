@@ -10,9 +10,9 @@ generate:
 	./scripts/generate-rest-client.sh
 	go generate ./...
 	go run ./cmd/example-generator
-	
+
 lint:
-	golangci-lint run ./... 
+	golangci-lint run ./...
 
 test: test-v1 test-v2
 

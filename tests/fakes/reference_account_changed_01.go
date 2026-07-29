@@ -8,7 +8,7 @@ var ReferenceAccountChanged01 = ActivityLogTestCase{
 		"items": [
 			{
 			"action": {
-				"payload": { 
+				"payload": {
 					"verificationTransfer": false
 					},
 				"type": "redirectCashAccountScreen"

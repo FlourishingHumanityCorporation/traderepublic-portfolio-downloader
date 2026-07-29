@@ -13,7 +13,7 @@ import (
 var InterestPayout01 = TransactionTestCase{
 	TimelineTransactionsData: TimelineTransactionsTestData{
 		Raw: []byte(`{
-		"items": 
+		"items":
 			[
 				{
       "action": {

@@ -5,7 +5,7 @@ all: lint test
 generate:
 	set -e
 	go tool oapi-codegen -config pkg/traderepublic/oapi/config.yml pkg/traderepublic/oapi/openapi.yml > pkg/traderepublic/openapi_gen.go
-	
+
 	go tool go-jsonschema -p traderepublic \
 	--schema-output=https://raw.githubusercontent.com/dhojayev/traderepublic-portfolio-downloader/refs/heads/main/v2/pkg/traderepublic/schemas/common.json=pkg/traderepublic/common_gen.go \
 	--schema-output=https://raw.githubusercontent.com/dhojayev/traderepublic-portfolio-downloader/refs/heads/main/v2/pkg/traderepublic/schemas/ws_connect_request.json=pkg/traderepublic/ws_connect_request_gen.go \
@@ -26,7 +26,7 @@ generate:
 	go generate ./...
 
 lint:
-	go tool golangci-lint run ./... 
+	go tool golangci-lint run ./...
 
 test:
 	go test -v ./...

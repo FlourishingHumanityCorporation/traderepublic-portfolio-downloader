@@ -5,5 +5,5 @@ prompts:
   - name: Generate commit message
     description: Generates a commit message
     prompt: Write a short and clear commit message for these changes:\n\n@Git Diff
-    context:  
+    context:
       - provider: diff

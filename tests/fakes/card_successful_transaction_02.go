@@ -5,7 +5,7 @@ import "github.com/dhojayev/traderepublic-portfolio-downloader/internal/traderep
 var CardSuccessfulTransaction02 = TransactionTestCase{
 	TimelineTransactionsData: TimelineTransactionsTestData{
 		Raw: []byte(`{
-		"items": 
+		"items":
 			[
 				{
 					"action": {

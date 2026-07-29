@@ -10,7 +10,7 @@ import (
 var OrderExecuted05 = TransactionTestCase{
 	TimelineTransactionsData: TimelineTransactionsTestData{
 		Raw: []byte(`{
-    "items": 
+    "items":
     [
       {
         "action": {
