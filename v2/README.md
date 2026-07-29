@@ -1,86 +1,57 @@
 # Trade Republic Portfolio Downloader v2
 
-This is version 2 of the Trade Republic Portfolio Downloader, which includes a completely rewritten WebSocket client implementation.
+`v2` is the in-progress replacement for the legacy root Go module. It has its
+own `go.mod`, command composition roots, internal workflows, generated Trade
+Republic protocol types, and deterministic test lane.
 
-## Features
+## Current entry points
 
-- New WebSocket client with improved connection handling
-- Support for pagination in timeline transactions
-- Support for timeline detail requests
-- Automatic reconnection if the connection is lost
-- Automatic unsubscription after receiving data
-- Connection reuse for multiple subscriptions
+- `cmd/portfolio-downloader/main.go` composes the operator downloader.
+- `cmd/dev/main.go` composes the development fixture workflow.
 
-## Directory Structure
+The former `cmd/websocket-downloader` tree was an entirely commented-out
+prototype that referenced packages and Make targets which no longer exist. It
+was not executable and has been retired rather than retained as a misleading
+second operator path.
 
-```
-v2/
-├── cmd/
-│   └── websocket-downloader/  # Command-line tool for downloading transactions
-├── internal/
-│   ├── const.go               # Constants used by the WebSocket client
-│   └── traderepublic/
-│       └── api/
-│           └── websocketclient/ # WebSocket client implementation
-└── go.mod                     # Module definition for v2
-```
+## Owners
 
-## Usage
+- `pkg/traderepublic/**` owns generated protocol types, schemas, and the public
+  WebSocket publisher/client seam.
+- `internal/traderepublic/**` owns authentication and API adapters.
+- `internal/{instrument,message,timelinedetails,timelinetransactions,transaction}`
+  owns portfolio-processing workflows.
+- `internal/{file,writer}` owns output adapters.
+- `internal/{bus,console}` plus `internal/const.go` owns shared runtime
+  primitives.
+- `cmd/**` owns composition and operator/development delivery only.
 
-### WebSocket Client
+The complete allowed dependency graph and evolution rules live in
+`../docs/architecture/ARCHITECTURE.md`.
 
-```go
-import "github.com/dhojayev/traderepublic-portfolio-downloader/v2/internal/traderepublic/api/websocketclient"
+## Safe routine check
 
-// Create a new client
-client, err := websocketclient.NewClient(
-    websocketclient.WithLogger(logger),
-    websocketclient.WithSessionToken(sessionToken),
-)
-
-// Connect to the WebSocket server
-if err := client.Connect(ctx); err != nil {
-    log.Fatalf("Failed to connect to WebSocket: %v", err)
-}
-defer client.Close()
-
-// Subscribe to timeline transactions
-transactionsCh, err := client.SubscribeToTimelineTransactions(ctx)
-if err != nil {
-    log.Fatalf("Failed to subscribe to timeline transactions: %v", err)
-}
-
-// Wait for data
-select {
-case data := <-transactionsCh:
-    // Process data
-case <-ctx.Done():
-    log.Fatalf("Timeout waiting for timeline transactions: %v", ctx.Err())
-}
-```
-
-### WebSocket Downloader
+From the repository root:
 
 ```bash
-# Run with default settings
-go run ./v2/cmd/websocket-downloader/main.go
-
-# Run with debug logging
-go run ./v2/cmd/websocket-downloader/main.go --debug
-
-# Download only the first 10 transactions
-go run ./v2/cmd/websocket-downloader/main.go --max-items=10
-
-# Set a longer timeout (2 minutes)
-go run ./v2/cmd/websocket-downloader/main.go --timeout=120
+make check
 ```
 
-## Building
+Or for this nested module alone:
 
 ```bash
-# Build the WebSocket downloader
-go build -o websocket-downloader ./v2/cmd/websocket-downloader
+make -C v2 check
 ```
+
+These commands compile and test both Go modules without running either
+downloader, authenticating to Trade Republic, starting Docker, or writing
+portfolio responses/documents.
+
+## Generated sources
+
+`make -C v2 generate` rewrites checked-in generated protocol code and may
+access the network through Go tools. It is a maintenance operation, not part
+of the routine gate.
 
 ## License
 

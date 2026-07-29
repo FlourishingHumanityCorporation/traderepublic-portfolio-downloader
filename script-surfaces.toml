@@ -8,3 +8,11 @@ purpose = "Regenerate the repository REST client from its source API contract du
 owner = "traderepublic-portfolio-downloader"
 lifecycle = "maintenance"
 promotion = "keep-local"
+
+[[surface]]
+id = "container-entrypoint"
+path = "entrypoint.sh"
+purpose = "Install container build prerequisites, vendor modules, run the project gate, and assemble cross-platform binaries inside the release container."
+owner = "traderepublic-portfolio-downloader"
+lifecycle = "release"
+promotion = "external-image"

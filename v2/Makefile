@@ -1,4 +1,4 @@
-.PHONY: all generate lint test
+.PHONY: all generate lint test check
 
 all: lint test
 
@@ -30,3 +30,5 @@ lint:
 
 test:
 	go test -v ./...
+
+check: test

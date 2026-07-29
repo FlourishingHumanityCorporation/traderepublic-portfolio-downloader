@@ -1,4 +1,4 @@
-.PHONY: all init generate lint test check reset build-darwin-amd64 build-darwin-arm64 build-windows-386 build-windows-amd64 build-linux-386 build-linux-amd64 build-linux-arm64 test-policy
+.PHONY: all init generate lint test test-v1 test-v2 check architecture-check reset build-darwin-amd64 build-darwin-arm64 build-windows-386 build-windows-amd64 build-linux-386 build-linux-amd64 build-linux-arm64 test-policy
 
 all: lint test
 
@@ -14,9 +14,13 @@ generate:
 lint:
 	golangci-lint run ./... 
 
-test:
+test: test-v1 test-v2
+
+test-v1:
 	go test -v ./...
 
+test-v2:
+	$(MAKE) -C v2 test
 
 # Changed-file test policy gate. Runs in repo-native validation so marker,
 # skip/xfail, and validation-lane policy drift cannot hide until a fleet scan.
@@ -28,7 +32,13 @@ test-policy:
 	else \
 		python3 "$$HOME/CodeProjects/.meta/scripts/test-policy-changed-files" --repo "$$repo" $$files; \
 	fi
-check: test-policy test
+architecture-check:
+	APPCHECK_HISTORY_ENABLED=false \
+	APPCHECK_PROJECTS_JSON="$(CURDIR)/.appcheck/projects.json" \
+	APPCHECK_CODEPROJECTS_ROOT="$(CURDIR)" \
+	appcheck run traderepublic-portfolio-downloader --category architecture
+
+check: architecture-check test-policy test
 
 reset:
 	rm -rf .session .refresh responses documents transactions.csv

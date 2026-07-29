@@ -6,38 +6,46 @@ Workspace navigation index for the Trade Republic downloader fork.
 
 ## Architecture
 
-**Entry Points:** `cmd/portfoliodownloader/app.go` (application wiring) ·
-`cmd/example-generator/main.go` (example fixture generation)
+**Legacy entry points:** `cmd/portfoliodownloader/public/main.go` ·
+`cmd/portfoliodownloader/dev/main.go` · `cmd/example-generator/main.go`
 
-**Core Areas:** console auth/input, Trade Republic API clients, timeline
-transaction/activity processors, portfolio document/instrument/transaction
-mapping, CSV/JSON filesystem writers, SQLite repository helpers, and fake
-response fixtures.
+**v2 entry points:** `v2/cmd/portfolio-downloader/main.go` ·
+`v2/cmd/dev/main.go`
 
----
+**Operational entry points:** `entrypoint.sh` ·
+`scripts/generate-rest-client.sh`
 
-## 1. Commands
+The root and `v2` Go modules are independent generations. Their behavioral
+owners, public seams, allowed dependencies, composition roots, and non-live
+validation boundary are defined in
+[`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 
-- `cmd/portfoliodownloader/` - downloader command entrypoint and public/dev
-  variants.
-- `cmd/example-generator/` - fixture/example generation helper.
+## Legacy module
 
-## 2. Internal Packages
+- `cmd/portfoliodownloader/` - application orchestration and public/dev
+  composition.
+- `internal/traderepublc/api/` - authentication, REST, timeline, and WebSocket
+  transport.
+- `internal/traderepublc/portfolio/` - portfolio activity, document,
+  instrument, and transaction behavior.
+- `internal/database/`, `internal/filesystem/`, `internal/reader/`,
+  `internal/writer/` - persistence and output adapters.
 
-- `internal/console/` - terminal auth prompts and password input helpers.
-- `internal/database/` - SQLite repository setup.
-- `internal/filesystem/` - CSV and JSON file read/write helpers.
-- `internal/reader/` - request/response reader abstractions.
-- `internal/traderepublc/api/` - Trade Republic auth, headers, REST, timeline,
-  and WebSocket clients.
-- `internal/traderepublc/portfolio/` - activity, document, instrument, and
-  transaction mapping.
-- `internal/writer/` - writer abstractions.
+## v2 module
 
-## 3. Tests And Fixtures
+- `v2/cmd/portfolio-downloader/`, `v2/cmd/dev/` - v2 delivery and composition.
+- `v2/internal/traderepublic/` - v2 authentication and brokerage adapters.
+- `v2/internal/{instrument,message,timelinedetails,timelinetransactions,transaction}/`
+  - v2 portfolio workflows.
+- `v2/internal/{file,writer}/` - v2 output adapters.
+- `v2/pkg/traderepublic/` - v2 public protocol schemas and generated types.
 
-- `internal/**/*_test.go` - local unit tests used by `make check`.
-- `tests/fakes/` - static fake Trade Republic responses for deterministic tests.
+## Tests and safe gate
+
+- `tests/architecture/` - required architecture-contract regression.
+- `tests/fakes/` and `v2/tests/` - deterministic fixtures.
+- `make check` - architecture, changed-file policy, and both Go module test
+  lanes; it does not run a downloader or other live/maintenance operation.
 
 ---
 

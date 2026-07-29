@@ -1,6 +1,298 @@
 [app]
 name = "traderepublic-portfolio-downloader"
 type = "tool"
+required_checks = ["architecture"]
+
+[architecture]
+enabled = true
+required = true
+source_roots = [
+    "cmd",
+    "internal",
+    "tests",
+    "v2/cmd",
+    "v2/internal",
+    "v2/pkg",
+]
+resource_roots = [
+    ".continue",
+    ".github",
+    ".vscode",
+    "assets",
+    "docs",
+    "v2/tests",
+]
+resource_files = [
+    ".appcheck/architecture-baseline.json",
+    ".appcheck/projects.json",
+    ".claudeignore",
+    ".editorconfig",
+    ".gitignore",
+    ".golangci.yml",
+    ".pre-commit-config.yaml",
+    "AGENTS.md",
+    "LICENSE",
+    "Makefile",
+    "README.md",
+    "REBUILD.md",
+    "SYMBOLS-full.md",
+    "SYMBOLS.md",
+    "appcheck.toml",
+    "docker-compose.yml",
+    "go.mod",
+    "go.sum",
+    "script-surfaces.toml",
+    "v2/.env.example",
+    "v2/.gitignore",
+    "v2/.golangci.yml",
+    "v2/Makefile",
+    "v2/README.md",
+    "v2/go.mod",
+    "v2/go.sum",
+]
+script_roots = ["scripts"]
+entry_points = ["entrypoint.sh"]
+composition_roots = [
+    "scripts/generate-rest-client.sh",
+    "cmd/example-generator/main.go",
+    "cmd/portfoliodownloader/dev/main.go",
+    "cmd/portfoliodownloader/public/main.go",
+    "v2/cmd/dev/main.go",
+    "v2/cmd/portfolio-downloader/main.go",
+]
+max_root_files = 10
+script_max_lines = 200
+baseline_file = ".appcheck/architecture-baseline.json"
+
+[[architecture.modules]]
+name = "v1_core"
+paths = [
+    "internal/const.go",
+    "internal/counter.go",
+    "internal/datetime.go",
+    "internal/datetime_test.go",
+    "internal/time.go",
+    "internal/time_test.go",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "v1_persistence"
+paths = [
+    "internal/database/**",
+    "internal/filesystem/**",
+    "internal/reader/**",
+    "internal/writer/**",
+]
+may_depend_on = ["v1_core"]
+
+[[architecture.modules]]
+name = "v1_broker_transport"
+paths = [
+    "internal/console/**",
+    "internal/traderepublc/api/**",
+]
+may_depend_on = [
+    "v1_core",
+    "v1_persistence",
+]
+
+[[architecture.modules]]
+name = "v1_portfolio_domain"
+paths = ["internal/traderepublc/portfolio/**"]
+may_depend_on = [
+    "v1_broker_transport",
+    "v1_core",
+    "v1_persistence",
+]
+
+[[architecture.modules]]
+name = "v1_delivery"
+paths = ["cmd/portfoliodownloader/app.go"]
+may_depend_on = [
+    "v1_broker_transport",
+    "v1_core",
+    "v1_persistence",
+    "v1_portfolio_domain",
+]
+
+[[architecture.modules]]
+name = "v1_composition_roots"
+paths = [
+    "cmd/example-generator/main.go",
+    "cmd/portfoliodownloader/dev/**",
+    "cmd/portfoliodownloader/public/**",
+]
+may_depend_on = [
+    "v1_broker_transport",
+    "v1_core",
+    "v1_delivery",
+    "v1_persistence",
+    "v1_portfolio_domain",
+    "v1_test_support",
+]
+
+[[architecture.modules]]
+name = "v1_test_support"
+paths = [
+    "assets/**",
+    "tests/**",
+]
+may_depend_on = [
+    "v1_broker_transport",
+    "v1_core",
+    "v1_persistence",
+    "v1_portfolio_domain",
+]
+
+[[architecture.modules]]
+name = "v2_foundation"
+paths = [
+    "v2/internal/const.go",
+    "v2/internal/bus/**",
+    "v2/internal/console/**",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "v2_protocol"
+paths = ["v2/pkg/traderepublic/**"]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "v2_broker_transport"
+paths = ["v2/internal/traderepublic/**"]
+may_depend_on = [
+    "v2_foundation",
+    "v2_protocol",
+]
+
+[[architecture.modules]]
+name = "v2_workflows"
+paths = [
+    "v2/internal/instrument/**",
+    "v2/internal/message/**",
+    "v2/internal/timelinedetails/**",
+    "v2/internal/timelinetransactions/**",
+    "v2/internal/transaction/**",
+]
+may_depend_on = [
+    "v2_broker_transport",
+    "v2_foundation",
+    "v2_protocol",
+]
+
+[[architecture.modules]]
+name = "v2_output_adapters"
+paths = [
+    "v2/internal/file/**",
+    "v2/internal/writer/**",
+]
+may_depend_on = [
+    "v2_foundation",
+    "v2_workflows",
+]
+
+[[architecture.modules]]
+name = "v2_delivery"
+paths = [
+    "v2/cmd/dev/app/**",
+    "v2/cmd/portfolio-downloader/app.go",
+    "v2/cmd/portfolio-downloader/args.go",
+]
+may_depend_on = [
+    "v2_broker_transport",
+    "v2_foundation",
+    "v2_output_adapters",
+    "v2_protocol",
+    "v2_workflows",
+]
+
+[[architecture.modules]]
+name = "v2_composition_roots"
+paths = [
+    "v2/cmd/dev/main.go",
+    "v2/cmd/portfolio-downloader/main.go",
+]
+may_depend_on = [
+    "v2_broker_transport",
+    "v2_delivery",
+    "v2_foundation",
+    "v2_output_adapters",
+    "v2_protocol",
+    "v2_workflows",
+]
+
+[[architecture.modules]]
+name = "v2_test_support"
+paths = ["v2/tests/**"]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "maintenance_entrypoints"
+paths = [
+    "entrypoint.sh",
+    "scripts/**",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "automation_contract"
+paths = [
+    ".github/**",
+    "docker-compose.yml",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "project_knowledge"
+paths = [
+    "LICENSE",
+    "README.md",
+    "REBUILD.md",
+    "SYMBOLS-full.md",
+    "SYMBOLS.md",
+    "docs/**",
+    "v2/README.md",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "agent_control"
+paths = [
+    ".claudeignore",
+    ".continue/**",
+    "AGENTS.md",
+]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "developer_control"
+paths = [".vscode/**"]
+may_depend_on = []
+
+[[architecture.modules]]
+name = "build_control"
+paths = [
+    ".appcheck/architecture-baseline.json",
+    ".appcheck/projects.json",
+    ".editorconfig",
+    ".gitignore",
+    ".golangci.yml",
+    ".pre-commit-config.yaml",
+    "Makefile",
+    "appcheck.toml",
+    "go.mod",
+    "go.sum",
+    "script-surfaces.toml",
+    "v2/.env.example",
+    "v2/.gitignore",
+    "v2/.golangci.yml",
+    "v2/Makefile",
+    "v2/go.mod",
+    "v2/go.sum",
+]
+may_depend_on = []
 
 [env]
 required = []
@@ -26,8 +318,8 @@ scan_deprecated_usage = true
 
 [[custom_checks]]
 name = "check"
-command = "cd ~/CodeProjects/tools/traderepublic-portfolio-downloader && make check"
-description = "Trade Republic downloader Go tests pass without running the downloader, Docker, reset, live brokerage auth/API calls, document downloads, or response writes"
+command = "make check"
+description = "Trade Republic architecture and both Go module test lanes pass without running a downloader, generator, Docker, reset, live brokerage auth/API calls, document downloads, or response writes"
 timeout = 180
 fail_on_stderr = false
 

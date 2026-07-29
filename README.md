@@ -28,6 +28,24 @@
 >
 > **Want to help?** Check out the [issues](https://github.com/dhojayev/traderepublic-portfolio-downloader/issues) or explore the `v2` directory to contribute to the rewrite.
 
+## Repository architecture and safe validation
+
+The released legacy module and the in-progress `v2` module are separately
+governed and may not import one another. Their behavioral owners, public
+seams, dependency direction, composition roots, and operational boundaries
+are documented in
+[`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
+
+Run the complete non-live repository gate from the root:
+
+```bash
+make check
+```
+
+It runs the architecture contract, changed-file policy, and tests for both Go
+modules. It does not run a downloader, authenticate to Trade Republic, start
+Docker, reset state, generate clients, download documents, or write portfolio
+responses.
 
 ## Preamble
 

@@ -1,0 +1,271 @@
+{
+  "schema_version": "traderepublic-portfolio-downloader.std028-verification.v1",
+  "recorded_at": "2026-07-23T09:33:26Z",
+  "registry_key": "traderepublic-portfolio-downloader",
+  "standard": {
+    "id": "STD-028",
+    "version": "1.36.0"
+  },
+  "architecture_scope": "tools/traderepublic-portfolio-downloader",
+  "effective_git_root": "tools/traderepublic-portfolio-downloader",
+  "classification": "substantial",
+  "status": "IN_REVIEW",
+  "tested_revision": null,
+  "worktree_identity": {
+    "worktree": "/Users/paulrohde/CodeProjects/.worktrees/traderepublic-portfolio-downloader-std028-20260723",
+    "branch": "detached",
+    "base_head": "29fdf803aab8bc886af75a0073e2542d31e27b41",
+    "base_tree": "2328d6294c46052278d03e02c4d7efef3404aba6",
+    "canonical_upstream": "fhc/main",
+    "canonical_upstream_at_final_fetch": "29fdf803aab8bc886af75a0073e2542d31e27b41",
+    "upstream_ahead": 0,
+    "upstream_behind": 0,
+    "public_external_remote": "origin",
+    "candidate_tree_excluding_adoption_records": "70317206f6b1ace6616ca39dac99367e957dde96",
+    "tracked_patch_sha256_excluding_adoption_records": "20ed1a52873dfa3a18b71cd5580f2554389d617c67800bc2f721e242b0e9cce4",
+    "candidate_entries_excluding_adoption_records": 255,
+    "tracked_changes_at_identity_capture": 13,
+    "tracked_deletions_at_identity_capture": 2,
+    "untracked_files_in_identity": 5,
+    "adoption_records_excluded_to_avoid_self_reference": "docs/architecture/adoption/**",
+    "candidate_identity_index": "/private/tmp/traderepublic-candidate-index.czl6Vm",
+    "primary_checkout_clean": true,
+    "primary_upstream_ahead": 0,
+    "primary_upstream_behind": 0
+  },
+  "artifacts": {
+    "architecture_contract": {
+      "path": "appcheck.toml",
+      "sha256": "85b65c897b1698443d9f48c42c6120037173d4d8c1f77b516dda15ad722b797f"
+    },
+    "architecture_document": {
+      "path": "docs/architecture/ARCHITECTURE.md",
+      "sha256": "4668e0d16e1c55e776d3817b21fa64bae962be1db18af512176b39ad699dc47e"
+    },
+    "adoption_inventory": {
+      "path": "docs/architecture/adoption/inventory.md",
+      "sha256": "86c0cc489b791f5a4f24d25201e99126f575665f3ecac64dc94592dc34634f44"
+    },
+    "baseline": {
+      "path": ".appcheck/architecture-baseline.json",
+      "sha256": "ed5897ccea9ebd903493fa0175d3d86fc3fb67bc4b623b19f17f60dd829882e9",
+      "violations": {}
+    },
+    "local_registry": {
+      "path": ".appcheck/projects.json",
+      "sha256": "1bfc2ca8718559b7539a5d6947b784bcb44637a42f08d57527ce7b042772013e"
+    },
+    "generated_pre_commit": {
+      "path": ".pre-commit-config.yaml",
+      "sha256": "8dfa21d5839425846204396f0bb9eb5ba5e8eb8e15c297f603753d19c14c3807",
+      "exact_current_generator_output": true
+    },
+    "agent_guidance": {
+      "path": "AGENTS.md",
+      "sha256": "569ecde469064a20170b5b14ad39bf8fb7184dc5743d7d429f085051b0794239"
+    },
+    "makefile": {
+      "path": "Makefile",
+      "sha256": "3dbec80f15a54563c1042ad81050b8793bc22b2f0af3948a621bb22b351c9c2f"
+    },
+    "readme": {
+      "path": "README.md",
+      "sha256": "e2168a67f8c819c3ec5c168218193900758b16aa9decb4c79c7e1fdc42f57097"
+    },
+    "rebuild_guide": {
+      "path": "REBUILD.md",
+      "sha256": "bb140b7407cd623154615dc05675019fe7f4aba936e81ce0dd44c264e02a4c45"
+    },
+    "symbol_index": {
+      "path": "SYMBOLS.md",
+      "sha256": "81a4a51179a007d608648fb3133435859725367421600a53f266e298fcd4232a"
+    },
+    "full_symbol_index": {
+      "path": "SYMBOLS-full.md",
+      "sha256": "430e44f23f01df5c810f4c9685297e91446dab17e5819168ed2505df1df5e725"
+    },
+    "architecture_regression_test": {
+      "path": "tests/architecture/contract_test.go",
+      "sha256": "12a34e8b9647e4e48158e816a6da5fc3bd2a6319f022205d559548d9b3ad1519"
+    },
+    "v2_test_contract_fix": {
+      "path": "v2/internal/transaction/model_test.go",
+      "sha256": "15ef7040f0719beed5f3d2dc9144d32ada2cea65584da1c4ee63a0e93a458115"
+    }
+  },
+  "architecture": {
+    "module_owners": [
+      "v1_core",
+      "v1_persistence",
+      "v1_broker_transport",
+      "v1_portfolio_domain",
+      "v1_delivery",
+      "v1_composition_roots",
+      "v1_test_support",
+      "v2_foundation",
+      "v2_protocol",
+      "v2_broker_transport",
+      "v2_workflows",
+      "v2_output_adapters",
+      "v2_delivery",
+      "v2_composition_roots",
+      "v2_test_support",
+      "maintenance_entrypoints",
+      "automation_contract",
+      "project_knowledge",
+      "agent_control",
+      "developer_control",
+      "build_control"
+    ],
+    "composition_root_count": 6,
+    "exact_entry_point_count": 1,
+    "baseline_count": 0,
+    "major_changes": [
+      "The root native gate now runs architecture, changed-file policy, and both independent Go module test lanes.",
+      "The entirely commented, non-executable v2/cmd/websocket-downloader prototype and stale adjacent README were deleted after repository and workspace consumer searches found no consumer.",
+      "The pre-existing v2 model test was corrected to assert optional pointer values without changing production behavior.",
+      "Agent, README, rebuild, v2, and symbol navigation now name the real entry points and owner graph."
+    ],
+    "compatibility_facades": [],
+    "retained_exact_paths": [
+      "cmd/portfoliodownloader/public/main.go",
+      "cmd/portfoliodownloader/dev/main.go",
+      "cmd/example-generator/main.go",
+      "v2/cmd/portfolio-downloader/main.go",
+      "v2/cmd/dev/main.go",
+      "entrypoint.sh",
+      "scripts/generate-rest-client.sh",
+      "github.com/dhojayev/traderepublic-portfolio-downloader",
+      "github.com/dhojayev/traderepublic-portfolio-downloader/v2"
+    ],
+    "watch_roots": "No repository-owned live source watcher was detected. No active production path was moved; only the dead commented prototype was removed."
+  },
+  "checks": [
+    {
+      "command": "make check on clean base",
+      "status": "pass_with_coverage_gap",
+      "result": "The root Go module passed, but nested v2/go.mod was outside go test ./... and therefore untested."
+    },
+    {
+      "command": "make -C v2 test on clean base",
+      "status": "fail_as_expected",
+      "result": "One pre-existing model-builder test compared five intentional pointer-valued fields directly to scalars."
+    },
+    {
+      "command": "go test ./tests/architecture before declaration",
+      "status": "fail_as_expected",
+      "result": "The focused contract reported the missing architecture marker, table, baseline, document, and native Make targets."
+    },
+    {
+      "command": "make check",
+      "status": "pass",
+      "result": "Architecture, changed-file policy, 26 root test events, 58 v2 passing test events, and 23 explicit v2 skips completed without live or maintenance operations."
+    },
+    {
+      "command": "go vet ./... and cd v2 && go vet ./...",
+      "status": "pass",
+      "result": "Both Go modules passed static vetting."
+    },
+    {
+      "command": "full Appcheck with checkout-local registry and CodeProjects-root binding",
+      "status": "pass",
+      "result": "64 checks: 32 passed and 32 applicability skips."
+    },
+    {
+      "command": "architecture Appcheck JSON before final review records",
+      "status": "pass",
+      "result": "256 files scanned, 256 governed, zero outside governance, empty baseline, zero new/grown/stale/history findings, baseline history verified."
+    },
+    {
+      "command": "central pre-commit generator equivalence",
+      "status": "pass",
+      "result": "Candidate .pre-commit-config.yaml exactly matched current central generator output, sha256 8dfa21d5839425846204396f0bb9eb5ba5e8eb8e15c297f603753d19c14c3807."
+    },
+    {
+      "command": "preliminary generated architecture hook stages from disposable index",
+      "status": "pass",
+      "result": "Both pre-commit and pre-push stages ran architecture-check, and the disposable index matched the worktree before and after."
+    },
+    {
+      "command": "regenerate-symbols current and full",
+      "status": "unsupported_language_rejected",
+      "result": "The shared generator indexes Python, TypeScript, and Swift but not Go. Its empty output was rejected; the useful Go navigation indexes were restored and updated manually."
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass",
+      "result": "No whitespace errors."
+    }
+  ],
+  "final_record_inclusive_proof": {
+    "architecture_expected": {
+      "files_scanned": 259,
+      "governed_files": 259,
+      "outside_governance": 0,
+      "baseline_count": 0,
+      "new_violations": [],
+      "grown_violations": [],
+      "resolved_baseline_keys": [],
+      "stale_baseline_keys": [],
+      "baseline_history_regressions": [],
+      "baseline_history_verified": true
+    },
+    "root_test_events_passed": 26,
+    "root_test_events_skipped": 0,
+    "v2_test_events_passed": 58,
+    "v2_test_events_skipped": 23,
+    "generated_hook_proof_index": "/private/tmp/traderepublic-final-hook-proof.mYRNBr/index",
+    "proof_index_created_after_record_path_allocation": true,
+    "proof_index_matches_worktree": true,
+    "generated_pre_commit_stage": "pass",
+    "generated_pre_push_stage": "pass",
+    "git_diff_check": "pass"
+  },
+  "git_hook_installation": {
+    "primary_pre_commit": "missing",
+    "primary_pre_push": "missing",
+    "installed_dispatch_proof": "not_run",
+    "blocker": "The primary repository has no installed pre-commit or pre-push hook. Installing or executing primary hooks is outside this uncommitted isolated-candidate phase."
+  },
+  "shared_control_plane": {
+    "meta_head": "3ad0cd208f4d50df8151421f811b007645eb0203",
+    "meta_upstream_ahead": 0,
+    "meta_upstream_behind": 16,
+    "meta_dirty_entries": 25,
+    "published_revision": null,
+    "owned_registry_change": "Declare the checkout-bound architecture command and both non-live Go test lanes for traderepublic-portfolio-downloader.",
+    "projects_json_sha256": "46ce2addd1ed37de1d80accb23ddc23fa95da2ad9bf723cef60e2282deaf8293",
+    "pre_commit_overrides_sha256": "1e888279232d2c909639ed58ae76b92bd99efcf0bc6aa30d5534f5942ee99a5b",
+    "generator_sha256": "429bab778cc75d7c4d206bad5c8d9b18651ea7d4d90caec9f846841c89044d04",
+    "ledger_target_state": "IN_REVIEW"
+  },
+  "appcheck_implementation": {
+    "version": "0.1.0",
+    "binary": "/Users/paulrohde/.local/bin/appcheck",
+    "editable_source": "/Users/paulrohde/CodeProjects/packages/appcheck",
+    "source_head": "4960ee4451bdeba11ad062944dd9e5949358a65a",
+    "source_upstream_ahead": 0,
+    "source_upstream_behind": 1,
+    "source_dirty_entries": 24
+  },
+  "operational_boundaries": {
+    "live_processes_restarted": false,
+    "downloader_run": false,
+    "brokerage_auth_or_api_run": false,
+    "docker_run": false,
+    "reset_run": false,
+    "client_generation_run": false,
+    "release_build_run": false,
+    "portfolio_output_write_run": false,
+    "unexpected_operations": []
+  },
+  "remaining_blockers": [
+    "Independent contract review has not approved this stable candidate.",
+    "Independent quality review has not approved this stable candidate.",
+    "Primary pre-commit and composite pre-push hooks are not installed or proven.",
+    "The candidate is uncommitted and unpublished; no clean tested revision exists.",
+    "The shared .meta control-plane candidate is dirty, 16 revisions behind upstream, and unpublished.",
+    "The legacy REST generator references an absent openapi-rest.yaml and remains explicitly unverified.",
+    "Twenty-three explicit v2 test skips remain incomplete rewrite behavior and are not live-product proof."
+  ]
+}

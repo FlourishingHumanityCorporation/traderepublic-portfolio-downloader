@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "traderepublic-portfolio-downloader": {
+      "description": "Checkout-local binding for repository-native Appcheck validation. Fleet metadata remains authoritative in .meta/projects.json.",
+      "path": ".",
+      "type": "tool"
+    }
+  }
+}

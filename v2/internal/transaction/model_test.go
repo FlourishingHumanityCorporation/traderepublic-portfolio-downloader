@@ -63,13 +63,23 @@ func TestModelBuilder(t *testing.T) {
 		assert.Equal(t, expectedInstrument, model.ISIN)
 		assert.Equal(t, expectedShares, model.Shares)
 		assert.Equal(t, expectedRate, model.SharePrice)
-		assert.Equal(t, expectedYield, model.Yield)
-		assert.Equal(t, expectedProfit, model.Gain)
-		assert.Equal(t, expectedCommission, model.Fee)
+		if assert.NotNil(t, model.Yield) {
+			assert.Equal(t, expectedYield, *model.Yield)
+		}
+		if assert.NotNil(t, model.Gain) {
+			assert.Equal(t, expectedProfit, *model.Gain)
+		}
+		if assert.NotNil(t, model.Fee) {
+			assert.Equal(t, expectedCommission, *model.Fee)
+		}
 		assert.Equal(t, expectedDebit, model.Debit)
 		assert.Equal(t, expectedCredit, model.Credit)
-		assert.Equal(t, expectedTaxAmount, model.TaxAmount)
-		assert.Equal(t, expectedInvestedAmount, model.InvestedAmount)
+		if assert.NotNil(t, model.TaxAmount) {
+			assert.Equal(t, expectedTaxAmount, *model.TaxAmount)
+		}
+		if assert.NotNil(t, model.InvestedAmount) {
+			assert.Equal(t, expectedInvestedAmount, *model.InvestedAmount)
+		}
 		assert.Equal(t, expectedDocuments, model.Documents)
 	})
 }
