@@ -105,9 +105,10 @@ identity.
 | Knowledge | `README.md`, `v2/README.md`, `REBUILD.md`, `LICENSE`, `SYMBOLS*.md`, `docs/**` | `project_knowledge` |
 | Fixture | `assets/**`, `tests/**` | `v1_test_support` |
 
-The base tree had no tracked symlinks. The repository contains no active
-`CLAUDE.md`. The generated symbol indexes are retained and must be refreshed
-after stable paths are known.
+The base tree had no tracked symlinks. The original candidate base contained no
+active `CLAUDE.md`; canonical upstream later added a thin import adapter, which
+the reconciled contract assigns to `agent_control`. The generated symbol
+indexes are retained and must be refreshed after stable paths are known.
 
 ## Dependency inventory
 

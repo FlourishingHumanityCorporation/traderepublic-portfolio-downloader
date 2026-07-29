@@ -61,7 +61,7 @@ lines.
 | `maintenance_entrypoints` | `entrypoint.sh`, `scripts/**` | Container build dispatch and generated-client maintenance | Runtime portfolio behavior | Exact executable paths | None |
 | `automation_contract` | `.github/**`, `docker-compose.yml` | CI/release and container metadata | Runtime implementation | Workflow and Compose identities | None |
 | `project_knowledge` | Root/v2 READMEs, REBUILD, LICENSE, SYMBOLS, `docs/**` | Human architecture/setup/navigation truth | Runtime behavior | Document paths | None |
-| `agent_control` | `.claudeignore`, `.continue/**`, `AGENTS.md` | Repository-local agent rules | Runtime behavior | `AGENTS.md` | None |
+| `agent_control` | `.claudeignore`, `.continue/**`, `AGENTS.md`, `CLAUDE.md` | Repository-local agent rules and tool adapter | Runtime behavior | `AGENTS.md` | None |
 | `developer_control` | `.vscode/**` | Editor launch/settings metadata | Production behavior | VS Code metadata paths | None |
 | `build_control` | Exact build/gate/package files in `appcheck.toml` | Go modules, Make gates, lint/generator config, architecture/hook control | Product behavior | `make architecture-check`, `make check` | None |
 

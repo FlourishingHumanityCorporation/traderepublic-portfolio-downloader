@@ -31,6 +31,7 @@ resource_files = [
     ".golangci.yml",
     ".pre-commit-config.yaml",
     "AGENTS.md",
+    "CLAUDE.md",
     "LICENSE",
     "Makefile",
     "README.md",
@@ -263,6 +264,7 @@ paths = [
     ".claudeignore",
     ".continue/**",
     "AGENTS.md",
+    "CLAUDE.md",
 ]
 may_depend_on = []
 
