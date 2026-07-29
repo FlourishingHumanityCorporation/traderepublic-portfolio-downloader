@@ -59,13 +59,16 @@ bounded review. It is evidence for a reviewer, not independent approval.
 
 ## Blocking evidence
 
-- The candidate is committed but not yet published.
+- The exact implementation revision `7b8a88e` and its initial evidence commit
+  `0526d3b` are published to canonical `fhc/main`; the implementation is an
+  ancestor of the published evidence.
 - Independent review is still absent for exact revision `7b8a88e`.
 - The root REST generator is already broken by an absent
   `openapi-rest.yaml`; it was not run or claimed green.
 - Twenty-three v2 test events remain explicitly skipped.
 
 The generated pre-commit and composite pre-push stages both pass, and their
-dispatchers are installed. The fleet ledger must nevertheless remain
-`IN_REVIEW` until an independent reviewer records approval for this exact
-candidate identity.
+dispatchers are installed. This publication note records integration evidence
+only; it is not independent approval. The fleet ledger must remain `IN_REVIEW`
+until an independent reviewer records approval for this exact candidate
+identity.

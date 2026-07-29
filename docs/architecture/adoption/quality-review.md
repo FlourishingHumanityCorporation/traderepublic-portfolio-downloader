@@ -60,5 +60,10 @@ properties and open questions. It is not an independent quality decision.
 - The root REST generator and explicitly skipped v2 behavior remain outside
   this architecture adoption's acceptance claim.
 
+The exact implementation revision `7b8a88e` and its initial evidence commit
+`0526d3b` are published to canonical `fhc/main`, with the implementation
+reachable from the evidence commit. This integration fact is not an independent
+quality approval.
+
 The quality state remains `IN_REVIEW` until an independent reviewer approves
 exact revision `7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9`.

@@ -1,6 +1,6 @@
 {
   "schema_version": "traderepublic-portfolio-downloader.std028-verification.v2",
-  "recorded_at": "2026-07-29T05:38:37Z",
+  "recorded_at": "2026-07-29T05:41:34Z",
   "registry_key": "traderepublic-portfolio-downloader",
   "standard_version": "1.37.0",
   "architecture_scope": "tools/traderepublic-portfolio-downloader",
@@ -8,7 +8,7 @@
   "classification": "SUBSTANTIAL",
   "status": "IN_REVIEW",
   "tested_revision": "7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9",
-  "publication_revision": null,
+  "publication_revision": "0526d3b807d9ad3e00e1b3049d97e674664e4637",
   "worktree_identity": {
     "branch": "codex/std028-traderepublic-zero-debt-20260728",
     "original_base_revision": "29fdf803aab8bc886af75a0073e2542d31e27b41",
@@ -105,11 +105,11 @@
     },
     "contract_review_record": {
       "path": "docs/architecture/adoption/contract-review.md",
-      "sha256": "452de7393430b3dc4bf3504a266bf3ae8df3a286d83ff47e3c2a13f4adb4de70"
+      "sha256": "8bad45b3c05e2fb502a038220f34d66fb25f21e961b6f4ffcf48f7dcdf5f57ec"
     },
     "quality_review_record": {
       "path": "docs/architecture/adoption/quality-review.md",
-      "sha256": "01cf4ea43f1a90f66ea62d6d3b2ba8769516cc57c7daf81ad317a03941291de9"
+      "sha256": "7cddeeb175362a0cbd411bc75c793464722693431c01fb4d5893ed480852bedf"
     }
   },
   "architecture_result": {
@@ -185,12 +185,15 @@
     "installed_pre_push_execution": "pass"
   },
   "publication_proof": {
-    "status": "pending",
+    "status": "pass",
     "remote": "fhc",
     "branch": "main",
-    "published_revision": null,
-    "verified_at": null,
-    "tested_revision_reachable_from_published_revision": false
+    "published_revision": "0526d3b807d9ad3e00e1b3049d97e674664e4637",
+    "verified_at": "2026-07-29T05:41:34Z",
+    "tested_revision_reachable_from_published_revision": true,
+    "canonical_ahead_behind": "0/0",
+    "installed_pre_push": "pass",
+    "focused_checks": "pass"
   },
   "control_plane": {
     "candidate_branch": "codex/std028-hook-generator-v2-20260728",
@@ -215,9 +218,8 @@
     "No downloader binary, brokerage authentication/API/WebSocket request, Docker command, reset target, document/response writer, code generator, or release build was run."
   ],
   "blockers": [
-    "The exact implementation and evidence amendment are not yet published to canonical fhc/main.",
     "The isolated control-plane candidate is not yet published.",
     "Independent contract and quality reviews have not approved exact revision 7b8a88e, so the ledger must remain IN_REVIEW."
   ],
-  "next_action": "Publish the project implementation and evidence amendment, publish the control-plane batch, and retain IN_REVIEW until exact-revision independent reviews exist."
+  "next_action": "Publish this final evidence amendment, publish the control-plane batch, and retain IN_REVIEW until exact-revision independent reviews exist."
 }
