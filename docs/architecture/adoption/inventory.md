@@ -1,6 +1,6 @@
 ---
 created: 2026-07-23
-last_updated: 2026-07-23
+last_updated: 2026-07-28
 ---
 # STD-028 pre-move inventory — traderepublic-portfolio-downloader
 
@@ -13,7 +13,11 @@ Isolated candidate:
 Base revision: `29fdf803aab8bc886af75a0073e2542d31e27b41`
 Base tree: `2328d6294c46052278d03e02c4d7efef3404aba6`
 Canonical upstream: `fhc/main`, `0 ahead / 0 behind` at selection
-Candidate branch: detached HEAD
+Reconciled canonical revision:
+`044f6235d61d96f075218a4a9e6ea63c4f572606`
+Exact tested implementation:
+`7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9`
+Candidate branch: `codex/std028-traderepublic-zero-debt-20260728`
 
 The public `origin` remote points at the external upstream fork authority.
 The local `main` branch tracks `fhc/main`; it does not track `origin/main`.
@@ -24,6 +28,13 @@ The primary checkout was clean and was not edited. No matching downloader
 process or adoption worktree existed. No downloader binary, brokerage
 authentication, brokerage API/WebSocket request, document or response writer,
 Docker command, reset target, code generator, or release build was run.
+
+The 2026-07-28 reconciliation retained the later canonical `CLAUDE.md` adapter
+and fleet evidence exclusions. Running the generated hooks over the full tree
+then exposed historical trailing whitespace and mixed line endings, which were
+normalized mechanically. `.vscode/launch.json` is JSONC with comments, so the
+isolated control-plane override excludes only that file from `check-json`.
+Both generated hook stages now pass without modifying the tree.
 
 The starting root `make check` passed, but its `go test -v ./...` command
 covered only the root Go module. The nested `v2/go.mod` module was outside that

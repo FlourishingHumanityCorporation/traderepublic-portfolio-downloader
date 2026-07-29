@@ -1,7 +1,7 @@
 ---
 created: 2026-07-23
-last_updated: 2026-07-23
-candidate_tree: 70317206f6b1ace6616ca39dac99367e957dde96
+last_updated: 2026-07-28
+candidate_revision: 7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9
 status: PENDING_INDEPENDENT_REVIEW
 ---
 # STD-028 quality review — traderepublic-portfolio-downloader
@@ -30,6 +30,9 @@ properties and open questions. It is not an independent quality decision.
   are explicitly excluded.
 - Manually maintained Go symbol indexes were preserved after the shared
   Python/TypeScript/Swift generator produced empty output.
+- The generated hook cohort required a one-time normalization of historical
+  trailing whitespace and mixed line endings. The strict JSON hook excludes
+  only `.vscode/launch.json`, which is intentionally JSONC with comments.
 
 ## Required reviewer questions
 
@@ -54,7 +57,8 @@ properties and open questions. It is not an independent quality decision.
   behavior.
 - Appcheck owns file/module governance but does not establish full Go
   dependency semantics; reviewers must inspect the graph against imports.
-- Installed hook dispatch is missing in the primary repository.
+- The root REST generator and explicitly skipped v2 behavior remain outside
+  this architecture adoption's acceptance claim.
 
 The quality state remains `IN_REVIEW` until an independent reviewer approves
-this exact candidate tree.
+exact revision `7b8a88e6f09c52adda7f9e70aefd2be66bbd6ff9`.
