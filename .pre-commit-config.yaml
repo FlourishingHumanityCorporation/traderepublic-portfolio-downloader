@@ -44,7 +44,7 @@ repos:
         name: architecture module boundary gate (traderepublic-portfolio-downloader)
         entry: make architecture-check
         language: system
-        files: ^(?:(?:\.pre-commit-config\.yaml|AGENTS\.md|CLAUDE\.md|Makefile|appcheck\.toml|pyproject\.toml|\.appcheck/architecture-baseline\.json|docs/architecture/ARCHITECTURE\.md|cmd|internal|tests|v2/cmd|v2/internal|v2/pkg|\.continue|\.github|\.vscode|assets|docs|v2/tests|scripts|entrypoint\.sh|\.appcheck/projects\.json|\.claudeignore|\.editorconfig|\.gitignore|\.golangci\.yml|LICENSE|README\.md|REBUILD\.md|SYMBOLS-full\.md|SYMBOLS\.md|docker-compose\.yml|go\.mod|go\.sum|script-surfaces\.toml|v2/\.env\.example|v2/\.gitignore|v2/\.golangci\.yml|v2/Makefile|v2/README\.md|v2/go\.mod|v2/go\.sum|\.appcheck|docs/architecture|v2)$|(?:cmd/|internal/|tests/|v2/cmd/|v2/internal/|v2/pkg/|\.continue/|\.github/|\.vscode/|assets/|docs/|v2/tests/|scripts/))
+        files: ^(?:(?:\.pre-commit-config\.yaml|AGENTS\.md|CLAUDE\.md|Makefile|appcheck\.toml|pyproject\.toml|\.appcheck/architecture-baseline\.json|docs/architecture/ARCHITECTURE\.md|cmd|internal|tests|v2/cmd|v2/internal|v2/pkg|\.continue|\.github|\.vscode|assets|docs|v2/tests|scripts|entrypoint\.sh|\.appcheck/projects\.json|\.claudeignore|\.editorconfig|\.gitignore|\.golangci\.yml|LICENSE|README\.md|REBUILD\.md|SYMBOLS-full\.md|SYMBOLS\.md|docker-compose\.yml|go\.mod|go\.sum|script-surfaces\.toml|v2/\.env\.example|v2/\.gitignore|v2/\.golangci\.yml|v2/Makefile|v2/README\.md|v2/go\.mod|v2/go\.sum|\.appcheck|docs/architecture|v2)$|(?:cmd/|internal/|tests/|v2/cmd/|v2/internal/|v2/pkg/|\.continue/|\.github/|\.vscode/|assets/|docs/|v2/tests/|scripts/)|(?:[^/]+)$)
         pass_filenames: false
         require_serial: true
         stages:
